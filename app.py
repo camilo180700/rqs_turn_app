@@ -10,6 +10,7 @@ CLIENTS = ["Church's Chicken", "John Deere", "TNZ", "Mazda", "Lufthansa",
 PRIORITIES = ["Low", "Medium", "High"]
 PRIO_ICON = {"Low": "🟢", "Medium": "🟠", "High": "🔴"}
 PRIO_CLASS = {"Low": "pill-low", "Medium": "pill-medium", "High": "pill-high"}
+PRIO_COLOR = {"Low": "#16a34a", "Medium": "#f59e0b", "High": "#dc2626"}
 COLUMNS = ["member", "client", "priority", "time"]
 MAX_SHOWN = 20  # cuántas RQ's se MUESTRAN (todas se guardan igual en la hoja)
 
@@ -23,7 +24,6 @@ def H(s):
 # ---------------- Conexión ----------------
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# ⚡ CACHÉ: guarda la lectura en memoria 30 seg → los clics no releen la hoja cada vez
 @st.cache_data(ttl=30)
 def fetch_history():
     df = conn.read(worksheet="historial", ttl=30)
@@ -121,6 +121,14 @@ st.markdown("""
   .hist-time { color: #94a3b8 !important; font-size: 12px; min-width: 90px; text-align: right; }
   div[data-testid="stForm"] { border: none; padding: 0; }
   h1, .page-title { color:#0f172a !important; }
+  /* Indicadores */
+  .kpi {
+    background:#fff; border-radius:16px; padding:18px 20px; border:1px solid #eef0f3;
+    box-shadow:0 4px 14px rgba(15,23,42,.06); text-align:center;
+  }
+  .kpi .kpi-num { font-size:30px; font-weight:800; line-height:1; }
+  .kpi .kpi-lbl { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px; margin-top:6px; }
+  .section-title { font-size:20px; font-weight:800; color:#0f172a; margin:8px 0 4px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -177,7 +185,6 @@ with st.container(border=True):
         fc3.markdown('<div style="height:28px"></div>', unsafe_allow_html=True)
         submitted = fc3.form_submit_button(f"✅ {next_person} toma RQ", use_container_width=True)
         if submitted:
-            # 🛡️ Releemos SIN caché justo antes de escribir, para no perder datos
             try:
                 fresh = conn.read(worksheet="historial", ttl=0).dropna(how="all")
             except Exception:
@@ -217,7 +224,6 @@ with colA:
     if bc2.button("🗑️ Reiniciar", use_container_width=True):
         st.session_state.confirmar_reset = True
 
-    # 🔒 Confirmación para no borrar el historial por accidente
     if st.session_state.get("confirmar_reset", False):
         st.warning("⚠️ Esto borrará TODO el historial para todos. ¿Seguro?")
         cc1, cc2 = st.columns(2)
@@ -233,7 +239,6 @@ with colA:
             st.rerun()
 
 with colB:
-    # Estadísticas: cuentan TODO el historial (no solo lo mostrado)
     counts = {m: 0 for m in MEMBERS}
     for h in history:
         if h["member"] in counts:
@@ -244,7 +249,6 @@ with colB:
         block += f'<div class="stat-chip"><b>{counts[m]}</b>{m}</div>'
     block += '</div>'
 
-    # Historial: muestra los últimos MAX_SHOWN, pero TODOS siguen guardados en la hoja
     total = len(history)
     titulo = "Historial"
     if total > MAX_SHOWN:
@@ -264,3 +268,56 @@ with colB:
         block += '<span class="empty">Registra una RQ para empezar.</span>'
     block += "</div>"
     st.markdown(H(block), unsafe_allow_html=True)
+
+# ================================================================
+# ==================  📊  INDICADORES  ===========================
+# ================================================================
+st.markdown("<hr style='margin:26px 0;border:none;border-top:1px solid #e2e8f0;'>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'>📊 Indicadores</div>", unsafe_allow_html=True)
+
+if not history:
+    st.info("Registra RQ's para ver los indicadores.")
+else:
+    # --- KPIs superiores: total + por prioridad ---
+    prio_totals = {p: sum(1 for h in history if h["priority"] == p) for p in PRIORITIES}
+    k0, k1, k2, k3 = st.columns(4)
+    k0.markdown(H(f"<div class='kpi'><div class='kpi-num' style='color:#4f46e5'>{total}</div><div class='kpi-lbl'>Total RQ's</div></div>"), unsafe_allow_html=True)
+    k1.markdown(H(f"<div class='kpi'><div class='kpi-num' style='color:{PRIO_COLOR['Low']}'>🟢 {prio_totals['Low']}</div><div class='kpi-lbl'>Low</div></div>"), unsafe_allow_html=True)
+    k2.markdown(H(f"<div class='kpi'><div class='kpi-num' style='color:{PRIO_COLOR['Medium']}'>🟠 {prio_totals['Medium']}</div><div class='kpi-lbl'>Medium</div></div>"), unsafe_allow_html=True)
+    k3.markdown(H(f"<div class='kpi'><div class='kpi-num' style='color:{PRIO_COLOR['High']}'>🔴 {prio_totals['High']}</div><div class='kpi-lbl'>High</div></div>"), unsafe_allow_html=True)
+
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    # --- Pestañas de gráficas ---
+    t1, t2, t3 = st.tabs(["👥 Por persona", "🎯 Por prioridad", "🏢 Por cliente"])
+
+    with t1:
+        st.caption("Cantidad de RQ's tomadas por cada miembro")
+        df_member = pd.DataFrame(
+            {"Miembro": MEMBERS, "RQ's": [counts[m] for m in MEMBERS]}
+        ).set_index("Miembro")
+        st.bar_chart(df_member, color="#4f46e5", height=320)
+
+    with t2:
+        st.caption("Distribución de niveles de prioridad por miembro")
+        rows = []
+        for m in MEMBERS:
+            row = {"Miembro": m}
+            for p in PRIORITIES:
+                row[p] = sum(1 for h in history if h["member"] == m and h["priority"] == p)
+            rows.append(row)
+        df_prio = pd.DataFrame(rows).set_index("Miembro")[PRIORITIES]
+        # Colores en el mismo orden que las columnas: Low, Medium, High
+        st.bar_chart(df_prio, color=[PRIO_COLOR["Low"], PRIO_COLOR["Medium"], PRIO_COLOR["High"]], height=320)
+
+    with t3:
+        st.caption("RQ's tomadas por cliente")
+        client_counts = {}
+        for h in history:
+            client_counts[h["client"]] = client_counts.get(h["client"], 0) + 1
+        df_client = (
+            pd.DataFrame({"Cliente": list(client_counts.keys()), "RQ's": list(client_counts.values())})
+            .set_index("Cliente")
+            .sort_values("RQ's", ascending=False)
+        )
+        st.bar_chart(df_client, color="#7c3aed", height=340)
