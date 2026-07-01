@@ -10,6 +10,8 @@ CLIENTS = ["Church's Chicken", "John Deere", "TNZ", "Mazda", "Lufthansa",
 PRIORITIES = ["Low", "Medium", "High"]
 PRIO_ICON = {"Low": "🟢", "Medium": "🟠", "High": "🔴"}
 PRIO_CLASS = {"Low": "pill-low", "Medium": "pill-medium", "High": "pill-high"}
+COLUMNS = ["member", "client", "priority", "time"]
+MAX_SHOWN = 20  # cuántas RQ's se MUESTRAN (todas se guardan igual en la hoja)
 
 MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"]
 def fmt_time(d):
@@ -18,21 +20,32 @@ def fmt_time(d):
 def H(s):
     return "\n".join(line.strip() for line in s.strip().split("\n"))
 
-# ---------------- Conexión a Google Sheets ----------------
+# ---------------- Conexión ----------------
 conn = st.connection("gsheets", type=GSheetsConnection)
+
+# ⚡ CACHÉ: guarda la lectura en memoria 30 seg → los clics no releen la hoja cada vez
+@st.cache_data(ttl=30)
+def fetch_history():
+    df = conn.read(worksheet="historial", ttl=30)
+    return df.dropna(how="all")
+
+@st.cache_data(ttl=30)
+def fetch_turn_index():
+    df = conn.read(worksheet="estado", ttl=30)
+    try:
+        return int(df.iloc[0]["turn_index"])
+    except Exception:
+        return 0
 
 def load_history():
     try:
-        df = conn.read(worksheet="historial", ttl=0)
-        df = df.dropna(how="all")  # quita filas vacías
-        return df
+        return fetch_history()
     except Exception:
-        return pd.DataFrame(columns=["member", "client", "priority", "time"])
+        return pd.DataFrame(columns=COLUMNS)
 
 def load_turn_index():
     try:
-        df = conn.read(worksheet="estado", ttl=0)
-        return int(df.iloc[0]["turn_index"])
+        return fetch_turn_index()
     except Exception:
         return 0
 
@@ -41,6 +54,10 @@ def save_history(df):
 
 def save_turn_index(idx):
     conn.update(worksheet="estado", data=pd.DataFrame([{"turn_index": int(idx)}]))
+
+def clear_cache():
+    fetch_history.clear()
+    fetch_turn_index.clear()
 
 # ---------------- Page ----------------
 st.set_page_config(page_title="Turnos RQ's", page_icon="🎟️", layout="wide")
@@ -107,16 +124,22 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- Cargar datos desde la nube ----------------
+# ---------------- Cargar datos ----------------
 hist_df = load_history()
 turn_index = load_turn_index()
 next_person = MEMBERS[turn_index % len(MEMBERS)]
-
-# Convertir historial a lista de dicts (más reciente primero)
 history = hist_df.to_dict("records") if not hist_df.empty else []
 
-st.markdown("<h1 class='page-title'>🎟️ Turnos para tomar RQ's</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color:#64748b;margin-top:-8px;'>Rotación del equipo · datos compartidos en tiempo real.</p>", unsafe_allow_html=True)
+# ---------------- Encabezado + Actualizar ----------------
+head_col1, head_col2 = st.columns([4, 1])
+with head_col1:
+    st.markdown("<h1 class='page-title'>🎟️ Turnos para tomar RQ's</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#64748b;margin-top:-8px;'>Rotación del equipo · datos compartidos.</p>", unsafe_allow_html=True)
+with head_col2:
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+    if st.button("🔄 Actualizar", use_container_width=True):
+        clear_cache()
+        st.rerun()
 
 # ---------------- Fila superior ----------------
 col1, col2 = st.columns(2)
@@ -154,15 +177,22 @@ with st.container(border=True):
         fc3.markdown('<div style="height:28px"></div>', unsafe_allow_html=True)
         submitted = fc3.form_submit_button(f"✅ {next_person} toma RQ", use_container_width=True)
         if submitted:
+            # 🛡️ Releemos SIN caché justo antes de escribir, para no perder datos
+            try:
+                fresh = conn.read(worksheet="historial", ttl=0).dropna(how="all")
+            except Exception:
+                st.error("⚠️ No se pudo leer el historial. Intenta de nuevo en unos segundos.")
+                st.stop()
+
             new_row = pd.DataFrame([{
                 "member": next_person, "client": client,
                 "priority": priority, "time": fmt_time(datetime.now())
             }])
-            # Nueva fila al inicio (más reciente primero)
-            updated = pd.concat([new_row, hist_df], ignore_index=True)
-            save_history(updated)
-            save_turn_index((turn_index + 1) % len(MEMBERS))
-            st.cache_data.clear()
+            updated = pd.concat([new_row, fresh], ignore_index=True)
+            with st.spinner("Guardando..."):
+                save_history(updated)
+                save_turn_index((turn_index + 1) % len(MEMBERS))
+                clear_cache()
             st.rerun()
 
 # ---------------- Fila inferior ----------------
@@ -180,16 +210,30 @@ with colA:
 
     bc1, bc2 = st.columns(2)
     if bc1.button("⏭️ Saltar turno", use_container_width=True):
-        save_turn_index((turn_index + 1) % len(MEMBERS))
-        st.cache_data.clear()
+        with st.spinner("Guardando..."):
+            save_turn_index((turn_index + 1) % len(MEMBERS))
+            clear_cache()
         st.rerun()
     if bc2.button("🗑️ Reiniciar", use_container_width=True):
-        save_history(pd.DataFrame(columns=["member", "client", "priority", "time"]))
-        save_turn_index(0)
-        st.cache_data.clear()
-        st.rerun()
+        st.session_state.confirmar_reset = True
+
+    # 🔒 Confirmación para no borrar el historial por accidente
+    if st.session_state.get("confirmar_reset", False):
+        st.warning("⚠️ Esto borrará TODO el historial para todos. ¿Seguro?")
+        cc1, cc2 = st.columns(2)
+        if cc1.button("Sí, borrar", use_container_width=True):
+            with st.spinner("Reiniciando..."):
+                save_history(pd.DataFrame(columns=COLUMNS))
+                save_turn_index(0)
+                clear_cache()
+            st.session_state.confirmar_reset = False
+            st.rerun()
+        if cc2.button("Cancelar", use_container_width=True):
+            st.session_state.confirmar_reset = False
+            st.rerun()
 
 with colB:
+    # Estadísticas: cuentan TODO el historial (no solo lo mostrado)
     counts = {m: 0 for m in MEMBERS}
     for h in history:
         if h["member"] in counts:
@@ -200,9 +244,14 @@ with colB:
         block += f'<div class="stat-chip"><b>{counts[m]}</b>{m}</div>'
     block += '</div>'
 
-    block += '<div class="label" style="margin-top:20px;">Historial</div>'
+    # Historial: muestra los últimos MAX_SHOWN, pero TODOS siguen guardados en la hoja
+    total = len(history)
+    titulo = "Historial"
+    if total > MAX_SHOWN:
+        titulo = f"Historial (mostrando {MAX_SHOWN} de {total})"
+    block += f'<div class="label" style="margin-top:20px;">{titulo}</div>'
     if history:
-        for h in history:
+        for h in history[:MAX_SHOWN]:
             block += (
                 f'<div class="hist-row">'
                 f'<span class="hist-member">{h["member"]}</span>'
