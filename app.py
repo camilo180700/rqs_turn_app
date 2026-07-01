@@ -12,7 +12,7 @@ PRIO_ICON = {"Low": "🟢", "Medium": "🟠", "High": "🔴"}
 PRIO_CLASS = {"Low": "pill-low", "Medium": "pill-medium", "High": "pill-high"}
 PRIO_COLOR = {"Low": "#16a34a", "Medium": "#f59e0b", "High": "#dc2626"}
 COLUMNS = ["member", "client", "priority", "time"]
-MAX_SHOWN = 20  # cuántas RQ's se MUESTRAN (todas se guardan igual en la hoja)
+MAX_SHOWN = 20
 
 MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"]
 def fmt_time(d):
@@ -21,31 +21,20 @@ def fmt_time(d):
 def H(s):
     return "\n".join(line.strip() for line in s.strip().split("\n"))
 
-# ---------------- Conexión ----------------
+# ---------------- Conexión (UNA sola capa de caché) ----------------
 conn = st.connection("gsheets", type=GSheetsConnection)
-
-@st.cache_data(ttl=30)
-def fetch_history():
-    df = conn.read(worksheet="historial", ttl=30)
-    return df.dropna(how="all")
-
-@st.cache_data(ttl=30)
-def fetch_turn_index():
-    df = conn.read(worksheet="estado", ttl=30)
-    try:
-        return int(df.iloc[0]["turn_index"])
-    except Exception:
-        return 0
 
 def load_history():
     try:
-        return fetch_history()
+        df = conn.read(worksheet="historial", ttl=10)   # caché de 10s en la librería
+        return df.dropna(how="all")
     except Exception:
         return pd.DataFrame(columns=COLUMNS)
 
 def load_turn_index():
     try:
-        return fetch_turn_index()
+        df = conn.read(worksheet="estado", ttl=10)
+        return int(df.iloc[0]["turn_index"])
     except Exception:
         return 0
 
@@ -55,9 +44,9 @@ def save_history(df):
 def save_turn_index(idx):
     conn.update(worksheet="estado", data=pd.DataFrame([{"turn_index": int(idx)}]))
 
+# 🔑 EL FIX: limpia TODA la caché (incluida la interna de la librería)
 def clear_cache():
-    fetch_history.clear()
-    fetch_turn_index.clear()
+    st.cache_data.clear()
 
 # ---------------- Page ----------------
 st.set_page_config(page_title="Turnos RQ's", page_icon="🎟️", layout="wide")
@@ -121,14 +110,20 @@ st.markdown("""
   .hist-time { color: #94a3b8 !important; font-size: 12px; min-width: 90px; text-align: right; }
   div[data-testid="stForm"] { border: none; padding: 0; }
   h1, .page-title { color:#0f172a !important; }
-  /* Indicadores */
-  .kpi {
-    background:#fff; border-radius:16px; padding:18px 20px; border:1px solid #eef0f3;
-    box-shadow:0 4px 14px rgba(15,23,42,.06); text-align:center;
-  }
+  /* KPIs */
+  .kpi { background:#fff; border-radius:16px; padding:18px 20px; border:1px solid #eef0f3;
+    box-shadow:0 4px 14px rgba(15,23,42,.06); text-align:center; }
   .kpi .kpi-num { font-size:30px; font-weight:800; line-height:1; }
   .kpi .kpi-lbl { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px; margin-top:6px; }
   .section-title { font-size:20px; font-weight:800; color:#0f172a; margin:8px 0 4px; }
+  /* Barras personalizadas */
+  .chart-cap { font-size:13px; color:#475569; margin-bottom:14px; }
+  .barrow { display:flex; align-items:center; gap:12px; margin-bottom:13px; }
+  .barlabel { min-width:72px; font-weight:600; font-size:14px; color:#334155; }
+  .bartrack { flex:1; background:#f1f5f9; border-radius:8px; height:26px; overflow:hidden; }
+  .barfill { height:100%; border-radius:8px; display:flex; overflow:hidden; min-width:2px; transition:width .3s; }
+  .barval { min-width:26px; text-align:right; font-weight:800; color:#0f172a; font-size:14px; }
+  .legend { display:flex; gap:18px; margin-bottom:14px; font-size:13px; color:#475569; font-weight:600; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -145,7 +140,8 @@ with head_col1:
     st.markdown("<p style='color:#64748b;margin-top:-8px;'>Rotación del equipo · datos compartidos.</p>", unsafe_allow_html=True)
 with head_col2:
     st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
-    if st.button("🔄 Actualizar", use_container_width=True):
+    if st.button("🔄 Actualizar", use_container_width=True,
+                 help="Trae los últimos cambios que hicieron tus compañeros."):
         clear_cache()
         st.rerun()
 
@@ -190,7 +186,6 @@ with st.container(border=True):
             except Exception:
                 st.error("⚠️ No se pudo leer el historial. Intenta de nuevo en unos segundos.")
                 st.stop()
-
             new_row = pd.DataFrame([{
                 "member": next_person, "client": client,
                 "priority": priority, "time": fmt_time(datetime.now())
@@ -250,9 +245,7 @@ with colB:
     block += '</div>'
 
     total = len(history)
-    titulo = "Historial"
-    if total > MAX_SHOWN:
-        titulo = f"Historial (mostrando {MAX_SHOWN} de {total})"
+    titulo = "Historial" if total <= MAX_SHOWN else f"Historial (mostrando {MAX_SHOWN} de {total})"
     block += f'<div class="label" style="margin-top:20px;">{titulo}</div>'
     if history:
         for h in history[:MAX_SHOWN]:
@@ -278,7 +271,7 @@ st.markdown("<div class='section-title'>📊 Indicadores</div>", unsafe_allow_ht
 if not history:
     st.info("Registra RQ's para ver los indicadores.")
 else:
-    # --- KPIs superiores: total + por prioridad ---
+    # KPIs
     prio_totals = {p: sum(1 for h in history if h["priority"] == p) for p in PRIORITIES}
     k0, k1, k2, k3 = st.columns(4)
     k0.markdown(H(f"<div class='kpi'><div class='kpi-num' style='color:#4f46e5'>{total}</div><div class='kpi-lbl'>Total RQ's</div></div>"), unsafe_allow_html=True)
@@ -288,36 +281,60 @@ else:
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
-    # --- Pestañas de gráficas ---
+    # Datos por miembro y prioridad
+    per_prio = {m: {p: 0 for p in PRIORITIES} for m in MEMBERS}
+    for h in history:
+        if h["member"] in per_prio and h["priority"] in PRIORITIES:
+            per_prio[h["member"]][h["priority"]] += 1
+
     t1, t2, t3 = st.tabs(["👥 Por persona", "🎯 Por prioridad", "🏢 Por cliente"])
 
+    # --- Por persona ---
     with t1:
-        st.caption("Cantidad de RQ's tomadas por cada miembro")
-        df_member = pd.DataFrame(
-            {"Miembro": MEMBERS, "RQ's": [counts[m] for m in MEMBERS]}
-        ).set_index("Miembro")
-        st.bar_chart(df_member, color="#4f46e5", height=320)
-
-    with t2:
-        st.caption("Distribución de niveles de prioridad por miembro")
-        rows = []
+        max_c = max(list(counts.values()) + [1])
+        html = "<div class='card'><div class='chart-cap'>Cantidad de RQ's tomadas por cada miembro</div>"
         for m in MEMBERS:
-            row = {"Miembro": m}
-            for p in PRIORITIES:
-                row[p] = sum(1 for h in history if h["member"] == m and h["priority"] == p)
-            rows.append(row)
-        df_prio = pd.DataFrame(rows).set_index("Miembro")[PRIORITIES]
-        # Colores en el mismo orden que las columnas: Low, Medium, High
-        st.bar_chart(df_prio, color=[PRIO_COLOR["Low"], PRIO_COLOR["Medium"], PRIO_COLOR["High"]], height=320)
+            c = counts[m]
+            pct = int(c / max_c * 100)
+            html += (f"<div class='barrow'><span class='barlabel'>{m}</span>"
+                     f"<div class='bartrack'><div class='barfill' style='width:{pct}%;background:#4f46e5'></div></div>"
+                     f"<span class='barval'>{c}</span></div>")
+        html += "</div>"
+        st.markdown(H(html), unsafe_allow_html=True)
 
+    # --- Por prioridad (barras apiladas) ---
+    with t2:
+        max_t = max([counts[m] for m in MEMBERS] + [1])
+        html = ("<div class='card'><div class='chart-cap'>Mezcla de niveles por miembro "
+                "(ancho = volumen total)</div>"
+                "<div class='legend'><span>🟢 Low</span><span>🟠 Medium</span><span>🔴 High</span></div>")
+        for m in MEMBERS:
+            tm = counts[m]
+            pct = int(tm / max_t * 100)
+            segs = ""
+            for p in PRIORITIES:
+                cnt = per_prio[m][p]
+                if cnt > 0 and tm > 0:
+                    seg = cnt / tm * 100
+                    segs += f"<div style='width:{seg}%;background:{PRIO_COLOR[p]};height:100%'></div>"
+            html += (f"<div class='barrow'><span class='barlabel'>{m}</span>"
+                     f"<div class='bartrack'><div class='barfill' style='width:{pct}%'>{segs}</div></div>"
+                     f"<span class='barval'>{tm}</span></div>")
+        html += "</div>"
+        st.markdown(H(html), unsafe_allow_html=True)
+
+    # --- Por cliente ---
     with t3:
-        st.caption("RQ's tomadas por cliente")
         client_counts = {}
         for h in history:
             client_counts[h["client"]] = client_counts.get(h["client"], 0) + 1
-        df_client = (
-            pd.DataFrame({"Cliente": list(client_counts.keys()), "RQ's": list(client_counts.values())})
-            .set_index("Cliente")
-            .sort_values("RQ's", ascending=False)
-        )
-        st.bar_chart(df_client, color="#7c3aed", height=340)
+        ordered = sorted(client_counts.items(), key=lambda x: x[1], reverse=True)
+        max_cl = max([v for _, v in ordered] + [1])
+        html = "<div class='card'><div class='chart-cap'>RQ's tomadas por cliente</div>"
+        for name, c in ordered:
+            pct = int(c / max_cl * 100)
+            html += (f"<div class='barrow'><span class='barlabel' style='min-width:150px'>{name}</span>"
+                     f"<div class='bartrack'><div class='barfill' style='width:{pct}%;background:#7c3aed'></div></div>"
+                     f"<span class='barval'>{c}</span></div>")
+        html += "</div>"
+        st.markdown(H(html), unsafe_allow_html=True)
