@@ -4,9 +4,9 @@ import pandas as pd
 from datetime import datetime
 
 # ---------------- Config ----------------
-MEMBERS = ["Fer", "Dani", "Camilo", "Majo", "Lini", "Estefi"]
+MEMBERS = ["Fer", "Camilo", "Majo", "Lini", "Estefi"]
 CLIENTS = ["Church's Chicken", "John Deere", "TNZ", "Mazda", "Lufthansa",
-           "Swiss", "Australian", "Unilever", "Wendy's", "Unilever Commerce"]
+           "Swiss", "Australian", "Unilever", "Wendy's", "Unilever Commerce", "Support (other accounts)"]
 PRIORITIES = ["Low", "Medium", "High"]
 PRIO_ICON = {"Low": "🟢", "Medium": "🟠", "High": "🔴"}
 PRIO_CLASS = {"Low": "pill-low", "Medium": "pill-medium", "High": "pill-high"}
