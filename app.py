@@ -213,14 +213,20 @@ with st.expander("⚙️ Editar orden de rotación"):
     st.caption("Arrastra los nombres para cambiar el orden. Luego pulsa **Guardar orden**.")
     if "draft_order" not in st.session_state:
         st.session_state.draft_order = MEMBERS[:]
-    # Si el equipo cambió (set distinto), resincroniza el borrador
     if set(st.session_state.draft_order) != set(MEMBERS):
         st.session_state.draft_order = MEMBERS[:]
 
     new_order = sort_items(
         st.session_state.draft_order,
         key="reorder_members",
-        custom_style={"background": "#eef2ff", "borderRadius": "10px", "padding": "10px"}
+        custom_style={
+            "background": "#eef2ff",
+            "borderRadius": "10px",
+            "padding": "10px",
+            "color": "#1e1b4b",          # 👈 texto oscuro (antes era blanco/invisible)
+            "fontWeight": "700",
+            "fontSize": "15px",
+        },
     )
     if new_order != st.session_state.draft_order:
         st.session_state.draft_order = new_order
