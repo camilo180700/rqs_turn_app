@@ -1,12 +1,15 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
+from streamlit_sortables import sort_items
 import pandas as pd
 from datetime import datetime
 
 # ---------------- Config ----------------
-MEMBERS = ["Fer", "Camilo", "Majo", "Lini", "Estefi"]
+# Orden por defecto (Dani salió del equipo)
+DEFAULT_MEMBERS = ["Fer", "Camilo", "Lini", "Majo", "Estefi"]
 CLIENTS = ["Church's Chicken", "John Deere", "TNZ", "Mazda", "Lufthansa",
-           "Swiss", "Australian", "Unilever", "Wendy's", "Unilever Commerce", "Support (other accounts)"]
+           "Swiss", "Australian", "Unilever", "Wendy's", "Unilever Commerce",
+           "Support (other accounts)"]
 PRIORITIES = ["Low", "Medium", "High"]
 PRIO_ICON = {"Low": "🟢", "Medium": "🟠", "High": "🔴"}
 PRIO_CLASS = {"Low": "pill-low", "Medium": "pill-medium", "High": "pill-high"}
@@ -21,30 +24,40 @@ def fmt_time(d):
 def H(s):
     return "\n".join(line.strip() for line in s.strip().split("\n"))
 
-# ---------------- Conexión (UNA sola capa de caché) ----------------
+# ---------------- Conexión ----------------
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def load_history():
     try:
-        df = conn.read(worksheet="historial", ttl=10)   # caché de 10s en la librería
+        df = conn.read(worksheet="historial", ttl=10)
         return df.dropna(how="all")
     except Exception:
         return pd.DataFrame(columns=COLUMNS)
 
-def load_turn_index():
+def load_estado():
+    """Devuelve (turn_index, order). El orden se guarda en la hoja para todos."""
     try:
         df = conn.read(worksheet="estado", ttl=10)
-        return int(df.iloc[0]["turn_index"])
+        row = df.iloc[0]
+        idx = int(row["turn_index"])
+        order_str = str(row.get("order", "") or "")
+        order = [x.strip() for x in order_str.split(",") if x.strip()]
+        # Si el orden guardado no coincide con el equipo actual, usa el por defecto
+        if set(order) != set(DEFAULT_MEMBERS):
+            order = DEFAULT_MEMBERS[:]
+        return idx, order
     except Exception:
-        return 0
+        return 0, DEFAULT_MEMBERS[:]
 
 def save_history(df):
     conn.update(worksheet="historial", data=df)
 
-def save_turn_index(idx):
-    conn.update(worksheet="estado", data=pd.DataFrame([{"turn_index": int(idx)}]))
+def save_estado(idx, order):
+    conn.update(worksheet="estado", data=pd.DataFrame([{
+        "turn_index": int(idx),
+        "order": ",".join(order)
+    }]))
 
-# 🔑 EL FIX: limpia TODA la caché (incluida la interna de la librería)
 def clear_cache():
     st.cache_data.clear()
 
@@ -110,13 +123,11 @@ st.markdown("""
   .hist-time { color: #94a3b8 !important; font-size: 12px; min-width: 90px; text-align: right; }
   div[data-testid="stForm"] { border: none; padding: 0; }
   h1, .page-title { color:#0f172a !important; }
-  /* KPIs */
   .kpi { background:#fff; border-radius:16px; padding:18px 20px; border:1px solid #eef0f3;
     box-shadow:0 4px 14px rgba(15,23,42,.06); text-align:center; }
   .kpi .kpi-num { font-size:30px; font-weight:800; line-height:1; }
   .kpi .kpi-lbl { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px; margin-top:6px; }
   .section-title { font-size:20px; font-weight:800; color:#0f172a; margin:8px 0 4px; }
-  /* Barras personalizadas */
   .chart-cap { font-size:13px; color:#475569; margin-bottom:14px; }
   .barrow { display:flex; align-items:center; gap:12px; margin-bottom:13px; }
   .barlabel { min-width:72px; font-weight:600; font-size:14px; color:#334155; }
@@ -129,7 +140,7 @@ st.markdown("""
 
 # ---------------- Cargar datos ----------------
 hist_df = load_history()
-turn_index = load_turn_index()
+turn_index, MEMBERS = load_estado()      # MEMBERS = orden actual (compartido)
 next_person = MEMBERS[turn_index % len(MEMBERS)]
 history = hist_df.to_dict("records") if not hist_df.empty else []
 
@@ -193,9 +204,37 @@ with st.container(border=True):
             updated = pd.concat([new_row, fresh], ignore_index=True)
             with st.spinner("Guardando..."):
                 save_history(updated)
-                save_turn_index((turn_index + 1) % len(MEMBERS))
+                save_estado((turn_index + 1) % len(MEMBERS), MEMBERS)
                 clear_cache()
             st.rerun()
+
+# ---------------- Editar orden (arrastrar) ----------------
+with st.expander("⚙️ Editar orden de rotación"):
+    st.caption("Arrastra los nombres para cambiar el orden. Luego pulsa **Guardar orden**.")
+    if "draft_order" not in st.session_state:
+        st.session_state.draft_order = MEMBERS[:]
+    # Si el equipo cambió (set distinto), resincroniza el borrador
+    if set(st.session_state.draft_order) != set(MEMBERS):
+        st.session_state.draft_order = MEMBERS[:]
+
+    new_order = sort_items(
+        st.session_state.draft_order,
+        key="reorder_members",
+        custom_style={"background": "#eef2ff", "borderRadius": "10px", "padding": "10px"}
+    )
+    if new_order != st.session_state.draft_order:
+        st.session_state.draft_order = new_order
+
+    gc1, gc2 = st.columns(2)
+    if gc1.button("💾 Guardar orden", use_container_width=True):
+        with st.spinner("Guardando orden..."):
+            save_estado(turn_index % len(new_order), new_order)
+            clear_cache()
+        st.success("¡Orden actualizado para todo el equipo!")
+        st.rerun()
+    if gc2.button("↩️ Deshacer cambios", use_container_width=True):
+        st.session_state.draft_order = MEMBERS[:]
+        st.rerun()
 
 # ---------------- Fila inferior ----------------
 colA, colB = st.columns([1, 1.6])
@@ -213,7 +252,7 @@ with colA:
     bc1, bc2 = st.columns(2)
     if bc1.button("⏭️ Saltar turno", use_container_width=True):
         with st.spinner("Guardando..."):
-            save_turn_index((turn_index + 1) % len(MEMBERS))
+            save_estado((turn_index + 1) % len(MEMBERS), MEMBERS)
             clear_cache()
         st.rerun()
     if bc2.button("🗑️ Reiniciar", use_container_width=True):
@@ -225,7 +264,7 @@ with colA:
         if cc1.button("Sí, borrar", use_container_width=True):
             with st.spinner("Reiniciando..."):
                 save_history(pd.DataFrame(columns=COLUMNS))
-                save_turn_index(0)
+                save_estado(0, MEMBERS)
                 clear_cache()
             st.session_state.confirmar_reset = False
             st.rerun()
@@ -271,7 +310,6 @@ st.markdown("<div class='section-title'>📊 Indicadores</div>", unsafe_allow_ht
 if not history:
     st.info("Registra RQ's para ver los indicadores.")
 else:
-    # KPIs
     prio_totals = {p: sum(1 for h in history if h["priority"] == p) for p in PRIORITIES}
     k0, k1, k2, k3 = st.columns(4)
     k0.markdown(H(f"<div class='kpi'><div class='kpi-num' style='color:#4f46e5'>{total}</div><div class='kpi-lbl'>Total RQ's</div></div>"), unsafe_allow_html=True)
@@ -281,7 +319,6 @@ else:
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
-    # Datos por miembro y prioridad
     per_prio = {m: {p: 0 for p in PRIORITIES} for m in MEMBERS}
     for h in history:
         if h["member"] in per_prio and h["priority"] in PRIORITIES:
@@ -289,41 +326,33 @@ else:
 
     t1, t2, t3 = st.tabs(["👥 Por persona", "🎯 Por prioridad", "🏢 Por cliente"])
 
-    # --- Por persona ---
     with t1:
         max_c = max(list(counts.values()) + [1])
         html = "<div class='card'><div class='chart-cap'>Cantidad de RQ's tomadas por cada miembro</div>"
         for m in MEMBERS:
-            c = counts[m]
-            pct = int(c / max_c * 100)
+            c = counts[m]; pct = int(c / max_c * 100)
             html += (f"<div class='barrow'><span class='barlabel'>{m}</span>"
                      f"<div class='bartrack'><div class='barfill' style='width:{pct}%;background:#4f46e5'></div></div>"
                      f"<span class='barval'>{c}</span></div>")
         html += "</div>"
         st.markdown(H(html), unsafe_allow_html=True)
 
-    # --- Por prioridad (barras apiladas) ---
     with t2:
         max_t = max([counts[m] for m in MEMBERS] + [1])
-        html = ("<div class='card'><div class='chart-cap'>Mezcla de niveles por miembro "
-                "(ancho = volumen total)</div>"
+        html = ("<div class='card'><div class='chart-cap'>Mezcla de niveles por miembro (ancho = volumen total)</div>"
                 "<div class='legend'><span>🟢 Low</span><span>🟠 Medium</span><span>🔴 High</span></div>")
         for m in MEMBERS:
-            tm = counts[m]
-            pct = int(tm / max_t * 100)
-            segs = ""
+            tm = counts[m]; pct = int(tm / max_t * 100); segs = ""
             for p in PRIORITIES:
                 cnt = per_prio[m][p]
                 if cnt > 0 and tm > 0:
-                    seg = cnt / tm * 100
-                    segs += f"<div style='width:{seg}%;background:{PRIO_COLOR[p]};height:100%'></div>"
+                    segs += f"<div style='width:{cnt / tm * 100}%;background:{PRIO_COLOR[p]};height:100%'></div>"
             html += (f"<div class='barrow'><span class='barlabel'>{m}</span>"
                      f"<div class='bartrack'><div class='barfill' style='width:{pct}%'>{segs}</div></div>"
                      f"<span class='barval'>{tm}</span></div>")
         html += "</div>"
         st.markdown(H(html), unsafe_allow_html=True)
 
-    # --- Por cliente ---
     with t3:
         client_counts = {}
         for h in history:
