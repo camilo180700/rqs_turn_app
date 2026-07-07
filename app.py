@@ -135,6 +135,22 @@ st.markdown("""
   .barfill { height:100%; border-radius:8px; display:flex; overflow:hidden; min-width:2px; transition:width .3s; }
   .barval { min-width:26px; text-align:right; font-weight:800; color:#0f172a; font-size:14px; }
   .legend { display:flex; gap:18px; margin-bottom:14px; font-size:13px; color:#475569; font-weight:600; }
+  div[data-testid="stExpander"] summary p,
+  div[data-testid="stExpander"] summary span,
+  details summary {
+    color: #1e1b4b !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+  }
+  /* El iconito de la flecha del expander */
+  div[data-testid="stExpander"] summary svg {
+    fill: #4f46e5 !important;
+  }
+  /* Caption/descripción dentro del expander */
+  div[data-testid="stExpander"] .stCaption,
+  div[data-testid="stExpander"] p {
+    color: #475569 !important;
+  }
 </style>
 """, unsafe_allow_html=True)
 
