@@ -208,33 +208,39 @@ with st.container(border=True):
                 clear_cache()
             st.rerun()
 
-# ---------------- Editar orden (arrastrar) ----------------
+# ---------------- Editar orden (botones ▲▼) ----------------
 with st.expander("⚙️ Editar orden de rotación"):
-    st.caption("Arrastra los nombres para cambiar el orden. Luego pulsa **Guardar orden**.")
+    st.caption("Usa las flechas para mover a cada persona. Luego pulsa **Guardar orden**.")
+
+    # Borrador editable en memoria
     if "draft_order" not in st.session_state:
         st.session_state.draft_order = MEMBERS[:]
     if set(st.session_state.draft_order) != set(MEMBERS):
         st.session_state.draft_order = MEMBERS[:]
 
-    new_order = sort_items(
-        st.session_state.draft_order,
-        key="reorder_members",
-        custom_style={
-            "background": "#eef2ff",
-            "borderRadius": "10px",
-            "padding": "10px",
-            "color": "#1e1b4b",          # 👈 texto oscuro (antes era blanco/invisible)
-            "fontWeight": "700",
-            "fontSize": "15px",
-        },
-    )
-    if new_order != st.session_state.draft_order:
-        st.session_state.draft_order = new_order
+    def mover(idx, direccion):
+        lst = st.session_state.draft_order[:]
+        if direccion == "up" and idx > 0:
+            lst[idx], lst[idx-1] = lst[idx-1], lst[idx]
+        elif direccion == "down" and idx < len(lst) - 1:
+            lst[idx], lst[idx+1] = lst[idx+1], lst[idx]
+        st.session_state.draft_order = lst
 
+    draft = st.session_state.draft_order
+    for i, m in enumerate(draft):
+        c_num, c_name, c_up, c_down = st.columns([0.6, 5, 1, 1])
+        c_num.markdown(f"<div style='padding-top:8px;font-weight:700;color:#64748b'>{i+1}</div>", unsafe_allow_html=True)
+        c_name.markdown(f"<div style='padding-top:6px;font-weight:700;font-size:16px;color:#1e1b4b'>{m}</div>", unsafe_allow_html=True)
+        c_up.button("⬆️", key=f"up_{i}", disabled=(i == 0),
+                    on_click=mover, args=(i, "up"), use_container_width=True)
+        c_down.button("⬇️", key=f"down_{i}", disabled=(i == len(draft)-1),
+                      on_click=mover, args=(i, "down"), use_container_width=True)
+
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
     gc1, gc2 = st.columns(2)
     if gc1.button("💾 Guardar orden", use_container_width=True):
         with st.spinner("Guardando orden..."):
-            save_estado(turn_index % len(new_order), new_order)
+            save_estado(turn_index % len(draft), draft)
             clear_cache()
         st.success("¡Orden actualizado para todo el equipo!")
         st.rerun()
