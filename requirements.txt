@@ -2,4 +2,3 @@ streamlit
 pandas
 st-gsheets-connection
 streamlit-sortables
-streamlit-autorefresh

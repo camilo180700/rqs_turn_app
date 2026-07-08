@@ -4,7 +4,7 @@ from streamlit_sortables import sort_items
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from streamlit_autorefresh import st_autorefresh
+
 
 # ---------------- Config ----------------
 # Orden por defecto (Dani salió del equipo)
@@ -71,8 +71,7 @@ def clear_cache():
 
 # ---------------- Page ----------------
 st.set_page_config(page_title="Turnos RQ's", page_icon="🎟️", layout="wide")
-# 🔄 Auto-refresco: la app se actualiza sola cada 15 seg
-st_autorefresh(interval=15000, key="auto_refresh")
+
 
 # ---------------- CSS ----------------
 st.markdown("""
