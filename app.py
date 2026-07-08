@@ -3,6 +3,7 @@ from streamlit_gsheets import GSheetsConnection
 from streamlit_sortables import sort_items
 import pandas as pd
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 # ---------------- Config ----------------
 # Orden por defecto (Dani salió del equipo)
@@ -16,6 +17,12 @@ PRIO_CLASS = {"Low": "pill-low", "Medium": "pill-medium", "High": "pill-high"}
 PRIO_COLOR = {"Low": "#16a34a", "Medium": "#f59e0b", "High": "#dc2626"}
 COLUMNS = ["member", "client", "priority", "time"]
 MAX_SHOWN = 20
+
+MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"]
+BOGOTA = ZoneInfo("America/Bogota")   # 👈 zona horaria de Colombia (UTC-5)
+
+def ahora_bogota():
+    return datetime.now(BOGOTA)
 
 MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"]
 def fmt_time(d):
@@ -215,7 +222,7 @@ with st.container(border=True):
                 st.stop()
             new_row = pd.DataFrame([{
                 "member": next_person, "client": client,
-                "priority": priority, "time": fmt_time(datetime.now())
+                "priority": priority, "time": fmt_time(ahora_bogota())   # 👈 CAMBIO
             }])
             updated = pd.concat([new_row, fresh], ignore_index=True)
             with st.spinner("Guardando..."):
