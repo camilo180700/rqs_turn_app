@@ -36,7 +36,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 def load_history():
     try:
-        df = conn.read(worksheet="historial", ttl=10)
+        df = conn.read(worksheet="historial", ttl=3)
         return df.dropna(how="all")
     except Exception:
         return pd.DataFrame(columns=COLUMNS)
@@ -44,7 +44,7 @@ def load_history():
 def load_estado():
     """Devuelve (turn_index, order). El orden se guarda en la hoja para todos."""
     try:
-        df = conn.read(worksheet="estado", ttl=10)
+        df = conn.read(worksheet="estado", ttl=3)
         row = df.iloc[0]
         idx = int(row["turn_index"])
         order_str = str(row.get("order", "") or "")
@@ -271,6 +271,73 @@ with st.expander("⚙️ Editar orden de rotación"):
         st.session_state.draft_order = MEMBERS[:]
         st.rerun()
 
+# ---------------- Corregir / eliminar una RQ ----------------
+with st.expander("✏️ Corregir o eliminar una RQ"):
+    if not history:
+        st.caption("Aún no hay RQ's para corregir.")
+    else:
+        st.caption("Elige una RQ del historial reciente y cámbiale el cliente o la prioridad.")
+
+        # Opciones legibles del historial reciente
+        opciones = [
+            f"{i+1}. {h['time']} · {h['member']} · {h['client']} · {h['priority']}"
+            for i, h in enumerate(history[:MAX_SHOWN])
+        ]
+        sel = st.selectbox("RQ a corregir", range(len(opciones)),
+                           format_func=lambda i: opciones[i], key="edit_sel")
+        actual = history[sel]
+
+        ec1, ec2 = st.columns(2)
+        nuevo_cliente = ec1.selectbox(
+            "Cliente", CLIENTS,
+            index=CLIENTS.index(actual["client"]) if actual["client"] in CLIENTS else 0,
+            key="edit_client")
+        nueva_prio = ec2.selectbox(
+            "Prioridad", PRIORITIES,
+            index=PRIORITIES.index(actual["priority"]) if actual["priority"] in PRIORITIES else 1,
+            key="edit_prio")
+
+        def _leer_fresh():
+            try:
+                return conn.read(worksheet="historial", ttl=0).dropna(how="all").reset_index(drop=True)
+            except Exception:
+                st.error("⚠️ No se pudo leer el historial. Intenta de nuevo.")
+                st.stop()
+
+        def _buscar_fila(df, ref):
+            # Encuentra la fila que coincide con la RQ seleccionada
+            m = ((df["member"] == ref["member"]) & (df["client"] == ref["client"]) &
+                 (df["priority"] == ref["priority"]) & (df["time"] == ref["time"]))
+            idxs = df.index[m].tolist()
+            return idxs[0] if idxs else None
+
+        b1, b2 = st.columns(2)
+        if b1.button("💾 Guardar corrección", use_container_width=True):
+            fresh = _leer_fresh()
+            fila = _buscar_fila(fresh, actual)
+            if fila is None:
+                st.warning("No encontré esa RQ (quizá alguien la cambió). Pulsa 🔄 Actualizar.")
+            else:
+                fresh.at[fila, "client"] = nuevo_cliente
+                fresh.at[fila, "priority"] = nueva_prio
+                with st.spinner("Guardando corrección..."):
+                    save_history(fresh)
+                    clear_cache()
+                st.success("¡RQ corregida! ✅")
+                st.rerun()
+
+        if b2.button("🗑️ Eliminar esta RQ", use_container_width=True):
+            fresh = _leer_fresh()
+            fila = _buscar_fila(fresh, actual)
+            if fila is None:
+                st.warning("No encontré esa RQ (quizá ya se eliminó). Pulsa 🔄 Actualizar.")
+            else:
+                fresh = fresh.drop(index=fila).reset_index(drop=True)
+                with st.spinner("Eliminando..."):
+                    save_history(fresh)
+                    clear_cache()
+                st.success("RQ eliminada 🗑️")
+                st.rerun()
 # ---------------- Fila inferior ----------------
 colA, colB = st.columns([1, 1.6])
 
