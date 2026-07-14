@@ -136,12 +136,10 @@ st.markdown("""
   .hist-time { color: #94a3b8 !important; font-size: 12px; min-width: 90px; text-align: right; }
   div[data-testid="stForm"] { border: none; padding: 0; }
   h1, .page-title { color:#0f172a !important; }
-  /* Expander visible */
   div[data-testid="stExpander"] summary p,
   div[data-testid="stExpander"] summary span,
   details summary { color:#1e1b4b !important; font-weight:700 !important; font-size:15px !important; }
   div[data-testid="stExpander"] summary svg { fill:#4f46e5 !important; }
-  /* KPIs */
   .kpi { background:#fff; border-radius:16px; padding:18px 20px; border:1px solid #eef0f3;
     box-shadow:0 4px 14px rgba(15,23,42,.06); text-align:center; }
   .kpi .kpi-num { font-size:30px; font-weight:800; line-height:1; }
@@ -176,6 +174,15 @@ def dialog_corregir(hist):
     sel = st.selectbox("Elige la RQ", range(len(opciones)), format_func=lambda i: opciones[i])
     actual = hist[sel]
 
+    # Opciones de miembro: los actuales + el de la RQ (por si ya no está en el equipo)
+    member_opts = MEMBERS[:]
+    if actual["member"] not in member_opts:
+        member_opts = [actual["member"]] + member_opts
+
+    # 👤 Editar la persona que tomó la RQ
+    nuevo_member = st.selectbox("Persona que tomó la RQ", member_opts,
+        index=member_opts.index(actual["member"]))
+
     ec1, ec2 = st.columns(2)
     nuevo_cliente = ec1.selectbox("Cliente", CLIENTS,
         index=CLIENTS.index(actual["client"]) if actual["client"] in CLIENTS else 0)
@@ -189,6 +196,7 @@ def dialog_corregir(hist):
         if fila is None:
             st.warning("No encontré esa RQ. Cierra y pulsa 🔄 Actualizar.")
         else:
+            fresh.at[fila, "member"] = nuevo_member
             fresh.at[fila, "client"] = nuevo_cliente
             fresh.at[fila, "priority"] = nueva_prio
             save_history(fresh); clear_cache()
@@ -237,7 +245,7 @@ def editor_orden(current_turn, members):
     if gc1.button("💾 Guardar orden", use_container_width=True):
         save_estado(current_turn % len(draft), draft); clear_cache()
         st.session_state.flash = "✅ Orden actualizado para el equipo"
-        st.rerun()  # rerun global: actualiza la rotación de toda la app
+        st.rerun()
     if gc2.button("↩️ Deshacer cambios", use_container_width=True):
         st.session_state.draft_order = members[:]
         st.rerun(scope="fragment")
@@ -324,26 +332,11 @@ with colA:
     rot += "</div>"
     st.markdown(H(rot), unsafe_allow_html=True)
 
-    bc1, bc2 = st.columns(2)
-    if bc1.button("⏭️ Saltar turno", use_container_width=True):
+    # ⏭️ Solo Saltar turno (Reiniciar eliminado)
+    if st.button("⏭️ Saltar turno", use_container_width=True):
         save_estado((turn_index + 1) % len(MEMBERS), MEMBERS); clear_cache()
         st.session_state.flash = "⏭️ Turno saltado"
         st.rerun()
-    if bc2.button("🗑️ Reiniciar", use_container_width=True):
-        st.session_state.confirmar_reset = True
-
-    if st.session_state.get("confirmar_reset", False):
-        st.warning("⚠️ Esto borrará TODO el historial. ¿Seguro?")
-        cc1, cc2 = st.columns(2)
-        if cc1.button("Sí, borrar", use_container_width=True):
-            save_history(pd.DataFrame(columns=COLUMNS))
-            save_estado(0, MEMBERS); clear_cache()
-            st.session_state.confirmar_reset = False
-            st.session_state.flash = "🗑️ Historial reiniciado"
-            st.rerun()
-        if cc2.button("Cancelar", use_container_width=True):
-            st.session_state.confirmar_reset = False
-            st.rerun()
 
 with colB:
     counts = {m: 0 for m in MEMBERS}
