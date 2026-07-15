@@ -122,7 +122,7 @@ st.markdown("""
   .rot-next { margin-left: auto; font-size: 11px; color: #4f46e5 !important; font-weight: 800; letter-spacing:.5px; }
 .stats {
     display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0;
-    max-height: 80px;              /* altura máxima del cuadro */
+    max-height: 130px;              /* altura máxima del cuadro */
     overflow-y: auto;               /* scroll si no cabe */
     padding: 10px;
     background: #fafbfc;
@@ -166,6 +166,14 @@ st.markdown("""
   .barfill { height:100%; border-radius:8px; display:flex; overflow:hidden; min-width:2px; transition:width .3s; }
   .barval { min-width:26px; text-align:right; font-weight:800; color:#0f172a; font-size:14px; }
   .legend { display:flex; gap:18px; margin-bottom:14px; font-size:13px; color:#475569; font-weight:600; }
+  .hist-scroll {
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+  .hist-scroll::-webkit-scrollbar { width: 7px; }
+  .hist-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+  .hist-scroll::-webkit-scrollbar-track { background: transparent; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -366,6 +374,7 @@ with colB:
     total = len(history)
     titulo = "Historial" if total <= MAX_SHOWN else f"Historial (mostrando {MAX_SHOWN} de {total})"
     block += f'<div class="label" style="margin-top:20px;">{titulo}</div>'
+    block += '<div class="hist-scroll">'
     if history:
         for h in history[:MAX_SHOWN]:
             block += (
@@ -378,8 +387,8 @@ with colB:
     else:
         block += '<span class="empty">Registra una RQ para empezar.</span>'
     block += "</div>"
+    block += "</div>"
     st.markdown(H(block), unsafe_allow_html=True)
-
 # ================================================================
 # ==================  📊  INDICADORES  ===========================
 # ================================================================
