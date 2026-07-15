@@ -122,7 +122,7 @@ st.markdown("""
   .rot-next { margin-left: auto; font-size: 11px; color: #4f46e5 !important; font-weight: 800; letter-spacing:.5px; }
 .stats {
     display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0;
-    max-height: 130px;              /* altura máxima del cuadro */
+    max-height: 80px;              /* altura máxima del cuadro */
     overflow-y: auto;               /* scroll si no cabe */
     padding: 10px;
     background: #fafbfc;
