@@ -120,10 +120,24 @@ st.markdown("""
   }
   .rot-item.active .rot-num { background: #4f46e5; color: #fff !important; }
   .rot-next { margin-left: auto; font-size: 11px; color: #4f46e5 !important; font-weight: 800; letter-spacing:.5px; }
-  .stats { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0; }
+.stats {
+    display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0;
+    max-height: 130px;              /* altura máxima del cuadro */
+    overflow-y: auto;               /* scroll si no cabe */
+    padding: 10px;
+    background: #fafbfc;
+    border: 1px solid #eef0f3;
+    border-radius: 12px;
+    align-content: flex-start;
+  }
+  /* Barra de scroll delgada y discreta */
+  .stats::-webkit-scrollbar { width: 7px; }
+  .stats::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+  .stats::-webkit-scrollbar-track { background: transparent; }
   .stat-chip {
-    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
-    padding: 10px 16px; font-size: 13px; text-align: center; color:#64748b !important; min-width:60px;
+    background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 8px 14px; font-size: 13px; text-align: center; color:#64748b !important;
+    min-width: 66px; flex: 0 0 auto;
   }
   .stat-chip b { display: block; font-size: 20px; color: #4f46e5 !important; margin-bottom:2px; }
   .hist-row {
