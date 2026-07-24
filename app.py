@@ -44,7 +44,8 @@ def load_estado():
         idx = int(row["turn_index"])
         order_str = str(row.get("order", "") or "")
         order = [x.strip() for x in order_str.split(",") if x.strip()]
-        if set(order) != set(DEFAULT_MEMBERS):
+        order = [x.strip() for x in order_str.split(",") if x.strip()]
+        if not order:                    # solo usa el default si la hoja está vacía
             order = DEFAULT_MEMBERS[:]
         return idx, order
     except Exception:
@@ -341,6 +342,45 @@ with acc2:
     st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
     if st.button("✏️ Corregir o eliminar una RQ", use_container_width=True):
         dialog_corregir(history)
+# ---------------- Gestionar miembros del equipo ----------------
+with st.expander("👥 Gestionar miembros del equipo"):
+    st.caption("Agrega o quita personas del equipo. Los cambios aplican para todos.")
+
+    # --- Agregar miembro ---
+    st.markdown("**➕ Agregar persona**")
+    ag1, ag2 = st.columns([3, 1])
+    nuevo = ag1.text_input("Nombre", key="nuevo_miembro", label_visibility="collapsed",
+                           placeholder="Nombre de la nueva persona")
+    if ag2.button("Agregar", use_container_width=True):
+        nombre = nuevo.strip()
+        if not nombre:
+            st.warning("Escribe un nombre.")
+        elif nombre in MEMBERS:
+            st.warning(f"{nombre} ya está en el equipo.")
+        else:
+            nueva_lista = MEMBERS + [nombre]
+            save_estado(turn_index % len(nueva_lista), nueva_lista)
+            clear_cache()
+            st.session_state.flash = f"✅ {nombre} agregado al equipo"
+            st.rerun()
+
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    # --- Quitar miembro ---
+    st.markdown("**➖ Quitar persona**")
+    if len(MEMBERS) <= 1:
+        st.info("Debe quedar al menos una persona en el equipo.")
+    else:
+        q1, q2 = st.columns([3, 1])
+        quitar = q1.selectbox("Persona a quitar", MEMBERS, key="quitar_miembro",
+                              label_visibility="collapsed")
+        if q2.button("Quitar", use_container_width=True):
+            nueva_lista = [m for m in MEMBERS if m != quitar]
+            nuevo_idx = turn_index % len(nueva_lista)  # reajusta el turno
+            save_estado(nuevo_idx, nueva_lista)
+            clear_cache()
+            st.session_state.flash = f"➖ {quitar} quitado del equipo"
+            st.rerun()
 
 # ---------------- Fila inferior ----------------
 colA, colB = st.columns([1, 1.6])
