@@ -121,23 +121,25 @@ function readStreamlit_(urlOrId) {
   const rows = [];
   vals.forEach(function (r) {
     if (!r[iM] && !r[iC]) return;                     // empty row
-    let date;
     const t = r[iT];
+    let day, month, hh, mm;
     if (t instanceof Date) {
-      // Sheets converted the text into a date on its own: keep it.
-      date = t;
-      year = Number(Utilities.formatDate(t, tz, 'yyyy'));
-      prevMonth = Number(Utilities.formatDate(t, tz, 'M'));
+      // Sheets turned the text into a date and made up the year (the current
+      // one). Keep day, month and time; the year is inferred below.
+      day = Number(Utilities.formatDate(t, tz, 'd'));
+      month = Number(Utilities.formatDate(t, tz, 'M'));
+      hh = Number(Utilities.formatDate(t, tz, 'H'));
+      mm = Number(Utilities.formatDate(t, tz, 'm'));
     } else {
       const m = String(t).trim().toLowerCase().match(/^(\d{1,2})\s+([a-z]{3})\.?\s+(\d{1,2}):(\d{2})$/);
       if (!m || !MONTHS[m[2]]) throw new Error('Could not read the date "' + t + '"');
-      const month = MONTHS[m[2]];
-      if (prevMonth === null && month > thisMonth) year--;   // newest row can't be in the future
-      if (prevMonth !== null && month > prevMonth) year--;   // crossed into the previous year
-      prevMonth = month;
-      const txt = year + '-' + pad_(month) + '-' + pad_(m[1]) + ' ' + pad_(m[3]) + ':' + m[4];
-      date = Utilities.parseDate(txt, tz, 'yyyy-MM-dd HH:mm');
+      day = Number(m[1]); month = MONTHS[m[2]]; hh = Number(m[3]); mm = Number(m[4]);
     }
+    if (prevMonth === null && month > thisMonth) year--;   // newest row can't be in the future
+    if (prevMonth !== null && month > prevMonth) year--;   // crossed into the previous year
+    prevMonth = month;
+    const txt = year + '-' + pad_(month) + '-' + pad_(day) + ' ' + pad_(hh) + ':' + pad_(mm);
+    const date = Utilities.parseDate(txt, tz, 'yyyy-MM-dd HH:mm');
     rows.push({
       date: date,
       member: String(r[iM]).trim(),
