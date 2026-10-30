@@ -5,7 +5,7 @@
  * La hoja guarda todo:
  *   - RQs     → historial de turnos tomados (una fila por RQ)
  *   - Estado  → a quién le toca y el orden de rotación
- *   - Config  → nombre del equipo, color, clientes, prioridades
+ *   - Config  → nombre del equipo, clientes, prioridades, dominio
  *
  * Para usarla en otro equipo solo se copia la hoja (el script viaja con
  * ella), se edita la pestaña Config y se implementa como app web.
@@ -26,7 +26,6 @@ const COL = { id: 0, fecha: 1, miembro: 2, cliente: 3, prioridad: 4,
 const DEFAULT_CONFIG = {
   equipo: "Turnos RQ's",
   subtitulo: 'Rotación del equipo · datos compartidos',
-  color: '#1f3a93',
   zona_horaria: 'America/Bogota',
   dominio_permitido: '',            // ej. "empresa.com"; vacío = no restringe
   miembros: ['Ana', 'Luis', 'Sofía', 'Diego', 'Valeria'],
@@ -178,7 +177,7 @@ function buildState_() {
   const est = leerEstado_();
   return {
     config: {
-      equipo: cfg.equipo, subtitulo: cfg.subtitulo, color: cfg.color,
+      equipo: cfg.equipo, subtitulo: cfg.subtitulo,
       clientes: cfg.clientes, prioridades: cfg.prioridades
     },
     orden: est.orden,
@@ -253,7 +252,7 @@ function getConfig_() {
     else if (k === 'prioridad') cfg.prioridades.push(v);
     else cfg[k] = v;
   });
-  ['equipo', 'subtitulo', 'color', 'zona_horaria', 'dominio_permitido'].forEach(function (k) {
+  ['equipo', 'subtitulo', 'zona_horaria', 'dominio_permitido'].forEach(function (k) {
     if (cfg[k] == null) cfg[k] = DEFAULT_CONFIG[k];
   });
   if (!cfg.prioridades.length) cfg.prioridades = DEFAULT_CONFIG.prioridades.slice();
@@ -341,7 +340,7 @@ function setup_() {
   if (!ss.getSheetByName(SHEET_CONFIG)) {
     const sh = ss.insertSheet(SHEET_CONFIG);
     const rows = [['clave', 'valor']];
-    ['equipo', 'subtitulo', 'color', 'zona_horaria', 'dominio_permitido'].forEach(function (k) {
+    ['equipo', 'subtitulo', 'zona_horaria', 'dominio_permitido'].forEach(function (k) {
       rows.push([k, DEFAULT_CONFIG[k]]);
     });
     DEFAULT_CONFIG.prioridades.forEach(function (p) { rows.push(['prioridad', p]); });
@@ -350,4 +349,9 @@ function setup_() {
     sh.getRange(1, 1, 1, 2).setFontWeight('bold');
     sh.setColumnWidth(1, 160); sh.setColumnWidth(2, 320);
   }
+}
+
+/** Inserta otro archivo HTML del proyecto (se usa para Marca.html). */
+function include(nombre) {
+  return HtmlService.createHtmlOutputFromFile(nombre).getContent();
 }

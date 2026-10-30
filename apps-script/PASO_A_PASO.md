@@ -10,7 +10,8 @@ Tiempo estimado: 30–40 minutos la primera vez.
 |---|---|
 | `Code.gs` | Servidor: lee y escribe la hoja, turnos, equipo, permisos |
 | `Migracion.gs` | Trae los turnos de la app de Streamlit (con respaldo) |
-| `Index.html` | La interfaz (todo en un archivo: estilos + lógica) |
+| `Index.html` | La interfaz, con el estilo visual del SBA Hub (estilos + lógica) |
+| `Marca.html` | Tipografía y logo de la barra superior (separado para poder cambiar de marca sin tocar la interfaz) |
 | `appsscript.json` | Manifiesto: zona horaria Bogotá, app web solo para el dominio |
 
 ---
@@ -35,7 +36,7 @@ La app de Streamlit no guarda nada en su servidor: todo está en una Google Shee
 2. En la hoja: **Extensiones → Apps Script**. Se abre el editor. Ponle nombre al proyecto arriba a la izquierda (ej. `Turnos RQs`).
 3. Archivo `Código.gs` que ya existe: bórralo todo y pega el contenido de **`Code.gs`**.
 4. **+ → Secuencia de comandos** → nómbralo `Migracion` → pega **`Migracion.gs`**.
-5. **+ → HTML** → nómbralo exactamente `Index` → pega **`Index.html`**.
+5. **+ → HTML** → nómbralo exactamente `Index` → pega **`Index.html`**. Repite con otro HTML llamado exactamente `Marca` → pega **`Marca.html`**.
 6. ⚙️ **Configuración del proyecto** → activa *Mostrar el archivo de manifiesto "appsscript.json"*. Vuelve al editor, abre `appsscript.json` y reemplázalo con el del paquete.
 7. Guarda (Ctrl+S). Arriba, en el selector de funciones, elige **`setup`** → **Ejecutar**. Acepta los permisos que pide (hoja, Drive para el respaldo, tu correo).
 8. Vuelve a la hoja: ya tiene tres pestañas nuevas, `RQs`, `Estado` y `Config`.
@@ -56,7 +57,6 @@ Si un cliente del historial no estaba en la lista, se agrega solo a `Config`. Si
 
 1. Pestaña **`Config`** (columna `clave` / `valor`):
    - `equipo`, `subtitulo`: lo que se ve arriba en la app.
-   - `color`: color principal en hex (ej. `#1f3a93`).
    - `dominio_permitido`: el dominio de la empresa, ej. `empresa.com`. Bloquea cualquier cuenta de afuera.
    - Filas `cliente` y `prioridad`: una por fila. Agregar un cliente = agregar una fila.
 2. En el editor de Apps Script: **Implementar → Nueva implementación** → tipo **App web**.
@@ -98,7 +98,7 @@ La app entera vive dentro de la hoja: al copiar la hoja se copia el código. As�
 
 **Cada equipo nuevo:**
 1. Abre el enlace `/copy` con su correo de empresa → **Hacer una copia**.
-2. Edita `Config` (nombre del equipo, color, clientes, prioridades, dominio) y `Estado` → `orden` con su gente separada por comas (también lo pueden hacer desde la app con "Gestionar equipo").
+2. Edita `Config` (nombre del equipo, subtítulo, clientes, prioridades, dominio) y `Estado` → `orden` con su gente separada por comas (también lo pueden hacer desde la app con "Gestionar equipo").
 3. Extensiones → Apps Script → ejecutar `setup` una vez y aceptar permisos.
 4. Hacer la Parte 4, paso 2 (implementar como app web) y compartir su URL.
 
@@ -110,15 +110,17 @@ Cada equipo queda con su propia hoja, sus datos y su URL. Nadie ve los datos de 
 
 | Quiero cambiar… | Dónde |
 |---|---|
-| Clientes, prioridades, color, nombre | Pestaña `Config` (sin tocar código) |
+| Clientes, prioridades, nombre, subtítulo | Pestaña `Config` (sin tocar código) |
+| Logo y tipografía | `Marca.html` |
 | Valores por defecto de equipos nuevos | `Code.gs` → `DEFAULT_CONFIG` |
 | Columnas que se guardan por RQ | `Code.gs` → `RQ_HEADERS` y `COL` |
 | Qué pasa al tomar una RQ | `Code.gs` → `tomarRq` |
 | Reglas del turno al quitar/reordenar gente | `Code.gs` → `quitarMiembro`, `guardarOrden` |
 | Quién puede entrar | `Code.gs` → `checkAccess_` + `dominio_permitido` en `Config` |
 | Columnas del CSV exportado | `Code.gs` → `exportarCsv` |
-| Colores, tipografía, espaciado | `Index.html` → bloque `<style>`, variables en `:root` |
+| Colores (navy, acento, lima), espaciado | `Index.html` → bloque `<style>`, variables en `:root` |
 | Colores de cada prioridad | `Index.html` → `:root` (`--low`, `--med`, `--high`) y `PRIO_STYLE` |
+| Textos del encabezado azul ("Le toca a", marca de agua TURNOS) | `Index.html` → `heroHtml` y `.hero::after` |
 | Tarjetas, tabla, indicadores | `Index.html` → `render`, `historyHtml`, `statsHtml` |
 | Filas por página / refresco automático | `Index.html` → `PAGE` y el `setInterval` al final |
 | Formato de la hoja vieja de Streamlit | `Migracion.gs` → `leerStreamlit_` |

@@ -23,7 +23,8 @@ App web para repartir solicitudes (RQs) entre un equipo por turnos rotativos. Es
 | Datos | Google Sheet con tres pestañas: `RQs`, `Estado`, `Config` |
 | Servidor | `Code.gs`: API para la UI, `LockService` para evitar choques cuando dos personas registran a la vez, validación y control de acceso por dominio |
 | Interfaz | `Index.html`: HTML/CSS/JS sin librerías, responsive, se repinta con el estado que devuelve cada llamada y se refresca cada 30 s |
-| Configuración | Pestaña `Config` (clave/valor): nombre, color, clientes, prioridades y dominio, sin tocar código |
+| Marca | `Marca.html`: tipografía y logo aislados en un archivo, para cambiar de marca sin tocar la interfaz |
+| Configuración | Pestaña `Config` (clave/valor): nombre, subtítulo, clientes, prioridades y dominio, sin tocar código |
 | Migración | `Migracion.gs`: lee el formato de Streamlit (`"29 oct 10:15"`), deduce el año y copia el estado de la rotación |
 
 Como el script está vinculado a la hoja, copiar la hoja copia la app completa: así se reparte como plantilla a otros equipos.
