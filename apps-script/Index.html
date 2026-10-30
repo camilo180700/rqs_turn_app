@@ -378,6 +378,8 @@ function badge(p) {
   return '<span class="badge" style="color:' + s.c + ';background:' + s.bg + ';border-color:' + s.bd + '">' + esc(p) + '</span>';
 }
 function $(id) { return document.getElementById(id); }
+// Alphabetical copy of a list (accent- and case-insensitive). The rotation itself keeps its turn order.
+function alpha(list) { return list.slice().sort(function (a, b) { return a.localeCompare(b, 'es', { sensitivity: 'base' }); }); }
 function monthLabel(m) { var p = m.split('-'); return MONTHS[+p[1] - 1] + ' ' + p[0]; }
 
 // ================= Server =================
@@ -404,6 +406,7 @@ function refresh() { call('getState'); }
 function render() {
   if (!S) return;
   var cfg = S.config;
+  cfg.clients = alpha(cfg.clients);
   $('t-title').textContent = cfg.team;
   $('t-sub').textContent = cfg.subtitle;
   document.title = cfg.team;
@@ -510,6 +513,7 @@ function months() {
 function historyHtml() {
   var members = S.order.slice();
   S.rqs.forEach(function (r) { if (members.indexOf(r.member) < 0) members.push(r.member); });
+  members = alpha(members);
   var rows = filtered();
   var h = '<section class="panel"><div class="panel-head"><div><span class="kicker">Shared log</span><h3>RQ history</h3></div>' +
     '<button class="btn" onclick="downloadCsv()">⬇ Export CSV</button></div>' +
@@ -561,6 +565,7 @@ function statsHtml() {
   } else {
     keys = S.order.slice();
     rows.forEach(function (r) { if (keys.indexOf(r.member) < 0) keys.push(r.member); });
+    keys = alpha(keys);
     keys.forEach(function (k) { by[k] = { t: 0 }; pr.forEach(function (p) { by[k][p] = 0; }); });
     rows.forEach(function (r) { by[r.member].t++; if (r.priority in by[r.member]) by[r.member][r.priority]++; });
     var mx = Math.max.apply(null, keys.map(function (k) { return by[k].t; }).concat([1]));
@@ -611,7 +616,7 @@ function mv(i, d) { var a = ui.draft, t = a[i]; a[i] = a[i + d]; a[i + d] = t; r
 function commitOrder() { var d = ui.draft; ui.draft = null; call('saveOrder', [d]); }
 
 function openTeam() {
-  $('q-mem').innerHTML = S.order.map(function (m) { return '<option>' + esc(m) + '</option>'; }).join('');
+  $('q-mem').innerHTML = alpha(S.order).map(function (m) { return '<option>' + esc(m) + '</option>'; }).join('');
   $('n-mem').value = '';
   openModal('m-team');
 }
@@ -638,7 +643,7 @@ function openEdit(id) {
   ui.editing = r;
   var opts = function (list, sel) {
     if (list.indexOf(sel) < 0) list = [sel].concat(list);
-    return list.map(function (x) { return '<option' + (x === sel ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('');
+    return alpha(list).map(function (x) { return '<option' + (x === sel ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('');
   };
   $('m-edit-sub').textContent = r.date + (r.createdBy ? ' · logged by ' + r.createdBy : '');
   $('e-mem').innerHTML = opts(S.order.slice(), r.member);
