@@ -58,7 +58,7 @@ If a client from the history wasn't on the list, it's added to `Config` automati
 1. **`Config`** tab (`key` / `value` columns):
    - `team`, `subtitle`: what shows at the top of the app.
    - `allowed_domain`: the company domain, e.g. `company.com`. Blocks any outside account.
-   - `client` and `priority` rows: one per row. To add a client, add a row.
+   - `client` and `priority` rows: one per row. Clients can also be added or removed from the app with **Manage clients**.
 2. In the Apps Script editor: **Deploy → New deployment** → type **Web app**.
    - Description: `v1`
    - Execute as: **Me** (your company email)

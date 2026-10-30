@@ -151,6 +151,37 @@ function removeMember(name) {
   });
 }
 
+function addClient(name) {
+  return withLock_(function () {
+    name = String(name || '').trim();
+    if (!name) throw new Error('Type a client name.');
+    const cfg = getConfig_();
+    const dup = cfg.clients.some(function (c) { return c.toLowerCase() === name.toLowerCase(); });
+    if (dup) throw new Error(name + ' is already on the list.');
+    sheet_(SHEET_CONFIG).appendRow(['client', name]);
+    CacheService.getScriptCache().remove('config');
+    return { state: buildState_(), msg: name + ' added to clients' };
+  });
+}
+
+function removeClient(name) {
+  return withLock_(function () {
+    const cfg = getConfig_();
+    if (cfg.clients.length <= 1) throw new Error('At least one client must remain.');
+    const sh = sheet_(SHEET_CONFIG);
+    const vals = sh.getDataRange().getValues();
+    for (let i = vals.length - 1; i >= 1; i--) {
+      if (String(vals[i][0]).trim().toLowerCase() === 'client' && String(vals[i][1]).trim() === name) {
+        sh.deleteRow(i + 1);
+        CacheService.getScriptCache().remove('config');
+        // Past RQs keep the client name; it just stops appearing in the list.
+        return { state: buildState_(), msg: name + ' removed from clients' };
+      }
+    }
+    throw new Error(name + ' is not on the list.');
+  });
+}
+
 /** CSV with the whole history (for the "Export" button). */
 function exportCsv() {
   checkAccess_();

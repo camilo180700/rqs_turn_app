@@ -330,6 +330,22 @@
   </div>
 </div>
 
+<!-- Modal: clients -->
+<div class="modal-bg" id="m-clients" onclick="if(event.target===this)closeModal('m-clients')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-clients-t">
+    <div class="modal-h"><h3 id="m-clients-t">Manage clients</h3><p>Changes apply to everyone. Past RQs keep their client.</p></div>
+    <div class="modal-b">
+      <div class="field"><label for="n-cli">Add client</label>
+        <div class="row"><input class="input" type="text" id="n-cli" placeholder="Client name">
+          <button class="btn btn-navy" onclick="onAddClient()">Add</button></div></div>
+      <div class="field" style="margin:0"><label for="q-cli">Remove client</label>
+        <div class="row"><select class="select" id="q-cli"></select>
+          <button class="btn btn-danger" onclick="onRemoveClient()">Remove</button></div></div>
+    </div>
+    <div class="modal-f"><span></span><button class="btn" onclick="closeModal('m-clients')">Close</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -471,7 +487,7 @@ function rotationHtml() {
   });
   h += '</ul><div class="side-actions">' + (editing
     ? '<button class="btn btn-navy" onclick="commitOrder()">Save order</button><button class="btn" onclick="cancelOrder()">Cancel</button>'
-    : '<button class="btn" onclick="skip()">⏭ Skip turn</button><button class="btn" onclick="openTeam()">👥 Manage team</button>') +
+    : '<button class="btn" onclick="skip()">⏭ Skip turn</button><button class="btn" onclick="openTeam()">👥 Manage team</button><button class="btn" onclick="openClients()">🏷 Manage clients</button>') +
     '</div></aside>';
   return h;
 }
@@ -603,6 +619,17 @@ function onAddMember() { call('addMember', [$('n-mem').value], function () { $('
 function onRemoveMember() {
   var m = $('q-mem').value;
   if (confirm('Remove ' + m + ' from the team? Their history is kept.')) call('removeMember', [m], openTeam);
+}
+
+function openClients() {
+  $('q-cli').innerHTML = S.config.clients.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('');
+  $('n-cli').value = '';
+  openModal('m-clients');
+}
+function onAddClient() { call('addClient', [$('n-cli').value], function () { $('n-cli').value = ''; openClients(); }); }
+function onRemoveClient() {
+  var c = $('q-cli').value;
+  if (confirm('Remove ' + c + ' from the client list? Past RQs keep it.')) call('removeClient', [c], openClients);
 }
 
 function openEdit(id) {
