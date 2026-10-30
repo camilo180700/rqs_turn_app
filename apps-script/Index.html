@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<?!= include('Marca'); ?>
+<?!= include('Brand'); ?>
 <style>
   /* ================================================================
-     Lenguaje visual del SBA Hub: navy #000050, acento #5465FF,
-     cian #00DBEE, lima #B0F467, fondo marfil con brillos suaves.
+     SBA Hub visual language: navy #000050, accent #5465FF,
+     cyan #00DBEE, lime #B0F467, ivory background with soft glows.
      ================================================================ */
   :root {
     --navy: #000050;
@@ -77,7 +77,7 @@
     background-size: 34px 34px;
   }
   .hero::after {
-    content: 'TURNOS TURNOS TURNOS TURNOS TURNOS'; position: absolute; top: 50%; left: -30px;
+    content: 'ROTATION ROTATION ROTATION ROTATION'; position: absolute; top: 50%; left: -30px;
     transform: translateY(-55%); font-size: clamp(130px, 16vw, 230px); font-weight: 700; letter-spacing: -6px;
     line-height: 1; white-space: nowrap; color: rgba(255,255,255,.045); pointer-events: none;
   }
@@ -97,7 +97,7 @@
                 font-size: 11.5px; color: rgba(255,255,255,.82); }
   .queue span.now { background: var(--lime); color: var(--navy); border-color: var(--lime); font-weight: 700; }
 
-  /* Tarjeta de registro dentro del hero */
+  /* Log card inside the hero */
   .take { background: #fff; color: var(--navy); border-radius: var(--radius-lg); padding: 22px;
           box-shadow: 0 30px 60px -20px rgba(0,0,40,.55); position: relative; overflow: hidden; }
   .take::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
@@ -127,7 +127,7 @@
                    background: var(--lime); color: var(--navy); font-size: 13px; font-weight: 900; }
   .btn-take:disabled { opacity: .55; cursor: default; background: var(--navy); }
 
-  /* ===== CONTENIDO ===== */
+  /* ===== CONTENT ===== */
   .content { max-width: 1320px; margin: 0 auto; padding: 26px 40px 60px; }
   .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
   .kpi { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-card);
@@ -146,7 +146,7 @@
   .panel-head h3 { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); }
   .panel-head .kicker, .section-h .kicker { display: block; margin-bottom: 3px; color: var(--cyan-dark); }
 
-  /* Rotación (estilo ws-nav del SBA Hub) */
+  /* Rotation (SBA Hub ws-nav style) */
   .side { position: sticky; top: 86px; padding: 12px; }
   .side-h { font-size: 10px; color: var(--muted-2); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
             padding: 6px 10px 10px; border-bottom: 1px solid var(--line); margin-bottom: 6px;
@@ -177,7 +177,7 @@
   .btn-sm { height: 30px; padding: 0 10px; font-size: 11.5px; border-radius: 7px; }
   .btn-icon { width: 28px; height: 28px; padding: 0; font-size: 12px; }
 
-  /* Toolbar (estilo accounts-toolbar) */
+  /* Toolbar (accounts-toolbar style) */
   .toolbar { display: grid; grid-template-columns: minmax(200px,1fr) auto auto auto; gap: 8px; padding: 8px;
              margin-bottom: 14px; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
   .search { display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 12px; border: 2px solid transparent;
@@ -197,7 +197,7 @@
   .t-select select { border: 0; outline: 0; background: transparent; font-size: 12px; font-weight: 700; color: var(--navy);
                      cursor: pointer; min-width: 80px; }
 
-  /* Tabla (estilo tablas del SBA Hub) */
+  /* Table (SBA Hub table style) */
   .t-wrap { border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; }
   .t-scroll { max-height: 470px; overflow: auto; }
   table { width: 100%; border-collapse: collapse; min-width: 560px; }
@@ -215,7 +215,7 @@
   .pager { display: flex; align-items: center; gap: 6px; }
   .empty { text-align: center; color: #94A3B8; padding: 36px; }
 
-  /* Indicadores */
+  /* Insights */
   .section-h { display: flex; align-items: end; justify-content: space-between; margin: 34px 0 14px; gap: 12px; flex-wrap: wrap; }
   .section-h h2 { margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.5px; color: var(--ink); }
   .tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 10px; background: #fff; border: 1px solid var(--line); }
@@ -233,7 +233,7 @@
   .legend { display: flex; gap: 16px; font-size: 11.5px; color: var(--muted); margin-bottom: 14px; font-weight: 600; }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 
-  /* Modal (cabecera navy con franja de marca) */
+  /* Modal (navy header with brand stripe) */
   .modal-bg { position: fixed; inset: 0; background: rgba(7,10,40,.5); backdrop-filter: blur(3px); display: none;
               place-items: center; z-index: 200; padding: 16px; }
   .modal-bg.open { display: grid; }
@@ -285,57 +285,57 @@
     <span class="brand-logo" role="img" aria-label="Logo"></span>
     <span class="brand-divider"></span>
     <div>
-      <div class="brand-name" id="t-title"><?= equipo ?></div>
+      <div class="brand-name" id="t-title"><?= team ?></div>
       <div class="brand-sub" id="t-sub"></div>
     </div>
   </div>
   <div class="top-actions">
     <span class="user-chip" id="t-user" hidden><span class="avatar" id="t-av"></span><span class="mail" id="t-mail"></span></span>
-    <button class="btn" onclick="refresh()" title="Trae los últimos cambios">↻ Actualizar</button>
+    <button class="btn" onclick="refresh()" title="Get the latest changes">↻ Refresh</button>
   </div>
 </header>
 
-<div id="app"><div class="skeleton">Cargando turnos…</div></div>
+<div id="app"><div class="skeleton">Loading rotation…</div></div>
 
-<!-- Modal: corregir / eliminar -->
+<!-- Modal: edit / delete -->
 <div class="modal-bg" id="m-edit" onclick="if(event.target===this)closeModal('m-edit')">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-edit-t">
-    <div class="modal-h"><h3 id="m-edit-t">Corregir RQ</h3><p id="m-edit-sub"></p></div>
+    <div class="modal-h"><h3 id="m-edit-t">Edit RQ</h3><p id="m-edit-sub"></p></div>
     <div class="modal-b">
-      <div class="field"><label for="e-mem">Persona que tomó la RQ</label><select class="select" id="e-mem"></select></div>
-      <div class="field"><label for="e-cli">Cliente</label><select class="select" id="e-cli"></select></div>
-      <div class="field" style="margin:0"><label for="e-pri">Prioridad</label><select class="select" id="e-pri"></select></div>
+      <div class="field"><label for="e-mem">Taken by</label><select class="select" id="e-mem"></select></div>
+      <div class="field"><label for="e-cli">Client</label><select class="select" id="e-cli"></select></div>
+      <div class="field" style="margin:0"><label for="e-pri">Priority</label><select class="select" id="e-pri"></select></div>
     </div>
     <div class="modal-f">
-      <button class="btn btn-danger" onclick="delRq()">Eliminar</button>
-      <div class="row"><button class="btn" onclick="closeModal('m-edit')">Cancelar</button>
-        <button class="btn btn-navy" onclick="saveRq()">Guardar cambios</button></div>
+      <button class="btn btn-danger" onclick="onDeleteRq()">Delete</button>
+      <div class="row"><button class="btn" onclick="closeModal('m-edit')">Cancel</button>
+        <button class="btn btn-navy" onclick="onSaveRq()">Save changes</button></div>
     </div>
   </div>
 </div>
 
-<!-- Modal: equipo -->
+<!-- Modal: team -->
 <div class="modal-bg" id="m-team" onclick="if(event.target===this)closeModal('m-team')">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-team-t">
-    <div class="modal-h"><h3 id="m-team-t">Gestionar equipo</h3><p>Los cambios aplican para todos. El historial de cada persona se conserva.</p></div>
+    <div class="modal-h"><h3 id="m-team-t">Manage team</h3><p>Changes apply to everyone. Each person's history is kept.</p></div>
     <div class="modal-b">
-      <div class="field"><label for="n-mem">Agregar persona</label>
-        <div class="row"><input class="input" type="text" id="n-mem" placeholder="Nombre">
-          <button class="btn btn-navy" onclick="addMember()">Agregar</button></div></div>
-      <div class="field" style="margin:0"><label for="q-mem">Quitar persona</label>
+      <div class="field"><label for="n-mem">Add person</label>
+        <div class="row"><input class="input" type="text" id="n-mem" placeholder="Name">
+          <button class="btn btn-navy" onclick="onAddMember()">Add</button></div></div>
+      <div class="field" style="margin:0"><label for="q-mem">Remove person</label>
         <div class="row"><select class="select" id="q-mem"></select>
-          <button class="btn btn-danger" onclick="removeMember()">Quitar</button></div></div>
+          <button class="btn btn-danger" onclick="onRemoveMember()">Remove</button></div></div>
     </div>
-    <div class="modal-f"><span></span><button class="btn" onclick="closeModal('m-team')">Cerrar</button></div>
+    <div class="modal-f"><span></span><button class="btn" onclick="closeModal('m-team')">Close</button></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ================= Estado de la UI =================
-var S = null;                 // estado que manda el servidor
-var ui = { prio: null, cli: null, tab: 'persona', q: '', fMem: '', fMes: '', page: 0, editing: null, draft: null };
+// ================= UI state =================
+var S = null;                 // state sent by the server
+var ui = { prio: null, cli: null, tab: 'person', q: '', fMem: '', fMes: '', page: 0, editing: null, draft: null };
 var PAGE = 25;
 var PRIO_STYLE = {
   low:    { c: 'var(--low)',  bg: 'var(--low-bg)',  bd: 'var(--low-bd)',  solid: '#059669' },
@@ -343,12 +343,12 @@ var PRIO_STYLE = {
   high:   { c: 'var(--high)', bg: 'var(--high-bg)', bd: 'var(--high-bd)', solid: '#D92D20' }
 };
 var EXTRA = ['#5465FF', '#00838F', '#7A5AF8', '#000050'];
-var MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function prioStyle(p) {
   var s = PRIO_STYLE[String(p).toLowerCase()];
   if (s) return s;
-  var i = S ? S.config.prioridades.indexOf(p) : 0;
+  var i = S ? S.config.priorities.indexOf(p) : 0;
   var c = EXTRA[Math.max(0, i) % EXTRA.length];
   return { c: c, bg: c + '1a', bd: c + '4d', solid: c };
 }
@@ -362,9 +362,9 @@ function badge(p) {
   return '<span class="badge" style="color:' + s.c + ';background:' + s.bg + ';border-color:' + s.bd + '">' + esc(p) + '</span>';
 }
 function $(id) { return document.getElementById(id); }
-function mesLabel(m) { var p = m.split('-'); return MES[+p[1] - 1] + ' ' + p[0]; }
+function monthLabel(m) { var p = m.split('-'); return MONTHS[+p[1] - 1] + ' ' + p[0]; }
 
-// ================= Servidor =================
+// ================= Server =================
 function call(fn, args, onOk) {
   $('loading').classList.add('on');
   var r = google.script.run
@@ -388,16 +388,16 @@ function refresh() { call('getState'); }
 function render() {
   if (!S) return;
   var cfg = S.config;
-  $('t-title').textContent = cfg.equipo;
-  $('t-sub').textContent = cfg.subtitulo;
-  document.title = cfg.equipo;
-  if (S.usuario) {
+  $('t-title').textContent = cfg.team;
+  $('t-sub').textContent = cfg.subtitle;
+  document.title = cfg.team;
+  if (S.user) {
     $('t-user').hidden = false;
-    $('t-mail').textContent = S.usuario;
-    $('t-av').textContent = S.usuario.charAt(0).toUpperCase();
+    $('t-mail').textContent = S.user;
+    $('t-av').textContent = S.user.charAt(0).toUpperCase();
   }
-  if (!ui.prio || cfg.prioridades.indexOf(ui.prio) < 0) ui.prio = cfg.prioridades[Math.floor((cfg.prioridades.length - 1) / 2)];
-  if (!ui.cli || cfg.clientes.indexOf(ui.cli) < 0) ui.cli = cfg.clientes[0];
+  if (!ui.prio || cfg.priorities.indexOf(ui.prio) < 0) ui.prio = cfg.priorities[Math.floor((cfg.priorities.length - 1) / 2)];
+  if (!ui.cli || cfg.clients.indexOf(ui.cli) < 0) ui.cli = cfg.clients[0];
 
   var y = window.scrollY;
   $('app').innerHTML = heroHtml() + '<main class="content">' + kpisHtml() +
@@ -407,135 +407,135 @@ function render() {
 }
 
 function heroHtml() {
-  var cfg = S.config, n = S.orden.length;
-  var now = n ? S.orden[S.indice] : '—';
-  var next = n > 1 ? S.orden[(S.indice + 1) % n] : '';
+  var cfg = S.config, n = S.order.length;
+  var now = n ? S.order[S.index] : '—';
+  var next = n > 1 ? S.order[(S.index + 1) % n] : '';
   var last = S.rqs[0];
   var queue = '';
   for (var i = 0; i < Math.min(n, 6); i++) {
-    var m = S.orden[(S.indice + i) % n];
-    queue += '<span class="' + (i === 0 ? 'now' : '') + '">' + (i === 0 ? 'Ahora · ' : i + 1 + '. ') + esc(m) + '</span>';
+    var m = S.order[(S.index + i) % n];
+    queue += '<span class="' + (i === 0 ? 'now' : '') + '">' + (i === 0 ? 'Now · ' : i + 1 + '. ') + esc(m) + '</span>';
   }
   return '<section class="hero"><div class="hero-inner"><div>' +
-    '<div class="eyebrow">⚡ Rotación de RQ’s</div>' +
-    '<h1>Le toca a <span class="highlight">' + esc(now) + '</span></h1>' +
-    '<p>' + (next ? 'Después sigue <b>' + esc(next) + '</b>. ' : '') +
-      (last ? 'Última RQ: <b>' + esc(last.cliente) + '</b> por ' + esc(last.miembro) + ' · ' + esc(last.fecha) : 'Aún no hay RQs registradas.') + '</p>' +
+    '<div class="eyebrow">⚡ RQ rotation</div>' +
+    '<h1>Up next: <span class="highlight">' + esc(now) + '</span></h1>' +
+    '<p>' + (next ? 'Then <b>' + esc(next) + '</b>. ' : '') +
+      (last ? 'Last RQ: <b>' + esc(last.client) + '</b> by ' + esc(last.member) + ' · ' + esc(last.date) : 'No RQs logged yet.') + '</p>' +
     '<div class="queue">' + queue + '</div><div class="hero-rule"></div></div>' +
 
-    '<div class="take"><div class="kicker">Registrar nueva RQ</div><h2>¿Qué entró?</h2>' +
-    '<div class="field"><label for="f-cli">Cliente</label><select class="select" id="f-cli">' +
-      cfg.clientes.map(function (c) { return '<option' + (c === ui.cli ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') +
+    '<div class="take"><div class="kicker">Log a new RQ</div><h2>What came in?</h2>' +
+    '<div class="field"><label for="f-cli">Client</label><select class="select" id="f-cli">' +
+      cfg.clients.map(function (c) { return '<option' + (c === ui.cli ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') +
     '</select></div>' +
-    '<div class="field"><span class="field-lbl">Prioridad</span><div class="seg" role="group" aria-label="Prioridad">' +
-      cfg.prioridades.map(function (p, i) {
+    '<div class="field"><span class="field-lbl">Priority</span><div class="seg" role="group" aria-label="Priority">' +
+      cfg.priorities.map(function (p, i) {
         return '<button type="button" style="--c:' + prioStyle(p).c + '" aria-pressed="' + (p === ui.prio) + '" onclick="setPrio(this,' + i + ')">' + esc(p) + '</button>';
       }).join('') +
     '</div></div>' +
-    '<button class="btn-take" id="b-take" onclick="take()"' + (n ? '' : ' disabled') + '><span class="chk">✓</span>' + esc(now) + ' toma la RQ</button>' +
+    '<button class="btn-take" id="b-take" onclick="take()"' + (n ? '' : ' disabled') + '><span class="chk">✓</span>' + esc(now) + ' takes this RQ</button>' +
     '</div></div></section>';
 }
 
 function kpisHtml() {
   var rows = scope();
-  var pr = S.config.prioridades, tot = {};
+  var pr = S.config.priorities, tot = {};
   pr.forEach(function (p) { tot[p] = 0; });
-  rows.forEach(function (r) { if (r.prioridad in tot) tot[r.prioridad]++; });
-  var lbl = ui.fMes ? mesLabel(ui.fMes) : 'Histórico';
+  rows.forEach(function (r) { if (r.priority in tot) tot[r.priority]++; });
+  var lbl = ui.fMonth ? monthLabel(ui.fMonth) : 'All time';
   var h = '<div class="kpis"><div class="kpi"><div class="l">Total RQs</div><div class="n">' + rows.length + '</div><div class="s">' + lbl + '</div></div>';
   pr.slice(0, 3).forEach(function (p) {
     var pct = rows.length ? Math.round(tot[p] / rows.length * 100) : 0;
     h += '<div class="kpi" style="--k:' + prioStyle(p).solid + '"><div class="l">' + esc(p) + '</div><div class="n">' + tot[p] +
-         '</div><div class="s">' + pct + '% del total</div></div>';
+         '</div><div class="s">' + pct + '% of total</div></div>';
   });
   return h + '</div>';
 }
 
 function rotationHtml() {
   var counts = {};
-  S.rqs.forEach(function (r) { counts[r.miembro] = (counts[r.miembro] || 0) + 1; });
+  S.rqs.forEach(function (r) { counts[r.member] = (counts[r.member] || 0) + 1; });
   var editing = ui.draft !== null;
-  var list = editing ? ui.draft : S.orden;
-  var h = '<aside class="panel side"><div class="side-h"><span>Orden de rotación</span>' +
-          (editing ? '' : '<button onclick="startOrder()">Editar</button>') + '</div><ul class="rot">';
+  var list = editing ? ui.draft : S.order;
+  var h = '<aside class="panel side"><div class="side-h"><span>Rotation order</span>' +
+          (editing ? '' : '<button onclick="startOrder()">Edit</button>') + '</div><ul class="rot">';
   list.forEach(function (m, i) {
-    var act = !editing && i === S.indice;
+    var act = !editing && i === S.index;
     h += '<li class="' + (act ? 'active' : '') + '"><span class="num">' + (i + 1) + '</span><span>' + esc(m) + '</span>';
     if (editing) {
-      h += '<span class="mv"><button class="btn btn-icon" ' + (i === 0 ? 'disabled' : '') + ' onclick="mv(' + i + ',-1)" aria-label="Subir">↑</button>' +
-           '<button class="btn btn-icon" ' + (i === list.length - 1 ? 'disabled' : '') + ' onclick="mv(' + i + ',1)" aria-label="Bajar">↓</button></span>';
+      h += '<span class="mv"><button class="btn btn-icon" ' + (i === 0 ? 'disabled' : '') + ' onclick="mv(' + i + ',-1)" aria-label="Move up">↑</button>' +
+           '<button class="btn btn-icon" ' + (i === list.length - 1 ? 'disabled' : '') + ' onclick="mv(' + i + ',1)" aria-label="Move down">↓</button></span>';
     } else {
-      h += '<span class="cnt">' + (act ? 'SIGUIENTE · ' : '') + (counts[m] || 0) + '</span>';
+      h += '<span class="cnt">' + (act ? 'UP NEXT · ' : '') + (counts[m] || 0) + '</span>';
     }
     h += '</li>';
   });
   h += '</ul><div class="side-actions">' + (editing
-    ? '<button class="btn btn-navy" onclick="saveOrder()">Guardar orden</button><button class="btn" onclick="cancelOrder()">Cancelar</button>'
-    : '<button class="btn" onclick="skip()">⏭ Saltar turno</button><button class="btn" onclick="openTeam()">👥 Gestionar equipo</button>') +
+    ? '<button class="btn btn-navy" onclick="commitOrder()">Save order</button><button class="btn" onclick="cancelOrder()">Cancel</button>'
+    : '<button class="btn" onclick="skip()">⏭ Skip turn</button><button class="btn" onclick="openTeam()">👥 Manage team</button>') +
     '</div></aside>';
   return h;
 }
 
-function scope() { return ui.fMes ? S.rqs.filter(function (r) { return r.mes === ui.fMes; }) : S.rqs; }
+function scope() { return ui.fMonth ? S.rqs.filter(function (r) { return r.month === ui.fMonth; }) : S.rqs; }
 function filtered() {
   var q = ui.q.toLowerCase();
   return scope().filter(function (r) {
-    if (ui.fMem && r.miembro !== ui.fMem) return false;
-    if (q && (r.cliente + ' ' + r.miembro + ' ' + r.prioridad).toLowerCase().indexOf(q) < 0) return false;
+    if (ui.fMem && r.member !== ui.fMem) return false;
+    if (q && (r.client + ' ' + r.member + ' ' + r.priority).toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
 }
 function months() {
   var seen = {}, out = [];
-  S.rqs.forEach(function (r) { if (!seen[r.mes]) { seen[r.mes] = 1; out.push(r.mes); } });
+  S.rqs.forEach(function (r) { if (!seen[r.month]) { seen[r.month] = 1; out.push(r.month); } });
   return out;
 }
 
 function historyHtml() {
-  var members = S.orden.slice();
-  S.rqs.forEach(function (r) { if (members.indexOf(r.miembro) < 0) members.push(r.miembro); });
+  var members = S.order.slice();
+  S.rqs.forEach(function (r) { if (members.indexOf(r.member) < 0) members.push(r.member); });
   var rows = filtered();
-  var h = '<section class="panel"><div class="panel-head"><div><span class="kicker">Registro compartido</span><h3>Historial de RQs</h3></div>' +
-    '<button class="btn" onclick="exportCsv()">⬇ Exportar CSV</button></div>' +
+  var h = '<section class="panel"><div class="panel-head"><div><span class="kicker">Shared log</span><h3>RQ history</h3></div>' +
+    '<button class="btn" onclick="downloadCsv()">⬇ Export CSV</button></div>' +
     '<div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span>' +
-      '<input type="search" id="f-q" placeholder="Buscar cliente, persona o prioridad…" value="' + esc(ui.q) + '" aria-label="Buscar"></label>' +
-    '<button class="t-total" onclick="clearFilters()" title="Limpiar filtros">Todas: <strong>' + S.rqs.length + '</strong></button>' +
-    '<label class="t-select"><span>Persona:</span><select id="f-mem"><option value="">Todas</option>' +
+      '<input type="search" id="f-q" placeholder="Search client, person or priority…" value="' + esc(ui.q) + '" aria-label="Search"></label>' +
+    '<button class="t-total" onclick="clearFilters()" title="Clear filters">All: <strong>' + S.rqs.length + '</strong></button>' +
+    '<label class="t-select"><span>Person:</span><select id="f-mem"><option value="">All</option>' +
       members.map(function (m) { return '<option' + (m === ui.fMem ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</select></label>' +
-    '<label class="t-select"><span>Mes:</span><select id="f-mes"><option value="">Todos</option>' +
-      months().map(function (m) { return '<option value="' + m + '"' + (m === ui.fMes ? ' selected' : '') + '>' + mesLabel(m) + '</option>'; }).join('') + '</select></label>' +
+    '<label class="t-select"><span>Month:</span><select id="f-month"><option value="">All</option>' +
+      months().map(function (m) { return '<option value="' + m + '"' + (m === ui.fMonth ? ' selected' : '') + '>' + monthLabel(m) + '</option>'; }).join('') + '</select></label>' +
     '</div>';
 
   var pages = Math.max(1, Math.ceil(rows.length / PAGE));
   if (ui.page >= pages) ui.page = pages - 1;
   var slice = rows.slice(ui.page * PAGE, ui.page * PAGE + PAGE);
-  h += '<div class="t-wrap"><div class="t-scroll"><table><thead><tr><th>Fecha</th><th>Persona</th><th>Cliente</th><th>Prioridad</th><th></th></tr></thead><tbody>';
-  if (!slice.length) h += '<tr><td colspan="5" class="empty">' + (S.rqs.length ? 'Sin resultados con esos filtros' : 'Registra una RQ para empezar') + '</td></tr>';
+  h += '<div class="t-wrap"><div class="t-scroll"><table><thead><tr><th>Date</th><th>Person</th><th>Client</th><th>Priority</th><th></th></tr></thead><tbody>';
+  if (!slice.length) h += '<tr><td colspan="5" class="empty">' + (S.rqs.length ? 'No results for these filters' : 'Log an RQ to get started') + '</td></tr>';
   slice.forEach(function (r) {
-    h += '<tr><td class="date">' + esc(r.fecha) + '</td><td class="who">' + esc(r.miembro) + '</td><td>' + esc(r.cliente) +
-         '</td><td>' + badge(r.prioridad) + '</td><td class="act"><button class="btn btn-sm" onclick="openEdit(\'' + r.id + '\')">Editar</button></td></tr>';
+    h += '<tr><td class="date">' + esc(r.date) + '</td><td class="who">' + esc(r.member) + '</td><td>' + esc(r.client) +
+         '</td><td>' + badge(r.priority) + '</td><td class="act"><button class="btn btn-sm" onclick="openEdit(\'' + r.id + '\')">Edit</button></td></tr>';
   });
-  h += '</tbody></table></div></div><div class="meta"><span>' + rows.length + ' RQs' + (rows.length !== S.rqs.length ? ' de ' + S.rqs.length : '') + '</span>';
+  h += '</tbody></table></div></div><div class="meta"><span>' + rows.length + ' RQs' + (rows.length !== S.rqs.length ? ' of ' + S.rqs.length : '') + '</span>';
   if (pages > 1) {
-    h += '<span class="pager"><button class="btn btn-icon" ' + (ui.page === 0 ? 'disabled' : '') + ' onclick="pg(-1)" aria-label="Anterior">‹</button>' +
+    h += '<span class="pager"><button class="btn btn-icon" ' + (ui.page === 0 ? 'disabled' : '') + ' onclick="pg(-1)" aria-label="Previous">‹</button>' +
          (ui.page + 1) + ' / ' + pages +
-         '<button class="btn btn-icon" ' + (ui.page >= pages - 1 ? 'disabled' : '') + ' onclick="pg(1)" aria-label="Siguiente">›</button></span>';
+         '<button class="btn btn-icon" ' + (ui.page >= pages - 1 ? 'disabled' : '') + ' onclick="pg(1)" aria-label="Next">›</button></span>';
   }
   return h + '</div></section>';
 }
 
 function statsHtml() {
-  var rows = scope(), pr = S.config.prioridades;
-  var tabs = [['persona', 'Por persona'], ['prioridad', 'Mezcla de prioridad'], ['cliente', 'Por cliente']];
-  var h = '<div class="section-h"><div><span class="kicker">Indicadores' + (ui.fMes ? ' · ' + mesLabel(ui.fMes) : '') + '</span><h2>Carga del equipo</h2></div>' +
+  var rows = scope(), pr = S.config.priorities;
+  var tabs = [['person', 'By person'], ['priority', 'Priority mix'], ['client', 'By client']];
+  var h = '<div class="section-h"><div><span class="kicker">Insights' + (ui.fMonth ? ' · ' + monthLabel(ui.fMonth) : '') + '</span><h2>Team workload</h2></div>' +
     '<div class="tabs" role="tablist">' + tabs.map(function (t) {
       return '<button role="tab" aria-selected="' + (ui.tab === t[0]) + '" onclick="setTab(\'' + t[0] + '\')">' + t[1] + '</button>';
     }).join('') + '</div></div><section class="panel">';
-  if (!rows.length) return h + '<div class="empty">Sin datos para mostrar</div></section>';
+  if (!rows.length) return h + '<div class="empty">No data to show</div></section>';
 
   var by = {}, keys;
-  if (ui.tab === 'cliente') {
-    rows.forEach(function (r) { by[r.cliente] = (by[r.cliente] || 0) + 1; });
+  if (ui.tab === 'client') {
+    rows.forEach(function (r) { by[r.client] = (by[r.client] || 0) + 1; });
     keys = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; });
     var max = by[keys[0]];
     keys.forEach(function (k) {
@@ -543,16 +543,16 @@ function statsHtml() {
            (by[k] / max * 100) + '%"></div></div><span class="val">' + by[k] + '</span></div>';
     });
   } else {
-    keys = S.orden.slice();
-    rows.forEach(function (r) { if (keys.indexOf(r.miembro) < 0) keys.push(r.miembro); });
+    keys = S.order.slice();
+    rows.forEach(function (r) { if (keys.indexOf(r.member) < 0) keys.push(r.member); });
     keys.forEach(function (k) { by[k] = { t: 0 }; pr.forEach(function (p) { by[k][p] = 0; }); });
-    rows.forEach(function (r) { by[r.miembro].t++; if (r.prioridad in by[r.miembro]) by[r.miembro][r.prioridad]++; });
+    rows.forEach(function (r) { by[r.member].t++; if (r.priority in by[r.member]) by[r.member][r.priority]++; });
     var mx = Math.max.apply(null, keys.map(function (k) { return by[k].t; }).concat([1]));
-    if (ui.tab === 'prioridad') {
+    if (ui.tab === 'priority') {
       h += '<div class="legend">' + pr.map(function (p) { return '<span><i style="background:' + prioStyle(p).solid + '"></i>' + esc(p) + '</span>'; }).join('') + '</div>';
     }
     keys.forEach(function (k) {
-      var mix = ui.tab === 'prioridad';
+      var mix = ui.tab === 'priority';
       var inner = mix ? pr.map(function (p) {
         return by[k][p] ? '<div style="width:' + (by[k][p] / by[k].t * 100) + '%;background:' + prioStyle(p).solid + '" title="' + esc(p) + ': ' + by[k][p] + '"></div>' : '';
       }).join('') : '';
@@ -566,7 +566,7 @@ function statsHtml() {
 function bind() {
   $('f-q').oninput = function () { ui.q = this.value; ui.page = 0; rerenderKeepFocus('f-q'); };
   $('f-mem').onchange = function () { ui.fMem = this.value; ui.page = 0; render(); };
-  $('f-mes').onchange = function () { ui.fMes = this.value; ui.page = 0; render(); };
+  $('f-month').onchange = function () { ui.fMonth = this.value; ui.page = 0; render(); };
   $('f-cli').onchange = function () { ui.cli = this.value; };
 }
 function rerenderKeepFocus(id) {
@@ -575,34 +575,34 @@ function rerenderKeepFocus(id) {
   el = $(id); el.focus(); el.setSelectionRange(pos, pos);
 }
 
-// ================= Acciones =================
+// ================= Actions =================
 function setPrio(btn, i) {
-  ui.prio = S.config.prioridades[i];
+  ui.prio = S.config.priorities[i];
   btn.parentNode.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b === btn); });
 }
 function take() {
   $('b-take').disabled = true;
-  call('tomarRq', [ui.cli, ui.prio]);
+  call('takeRq', [ui.cli, ui.prio]);
 }
-function skip() { call('saltarTurno'); }
+function skip() { call('skipTurn'); }
 function pg(d) { ui.page += d; render(); }
 function setTab(t) { ui.tab = t; render(); }
-function clearFilters() { ui.q = ''; ui.fMem = ''; ui.fMes = ''; ui.page = 0; render(); }
+function clearFilters() { ui.q = ''; ui.fMem = ''; ui.fMonth = ''; ui.page = 0; render(); }
 
-function startOrder() { ui.draft = S.orden.slice(); render(); }
+function startOrder() { ui.draft = S.order.slice(); render(); }
 function cancelOrder() { ui.draft = null; render(); }
 function mv(i, d) { var a = ui.draft, t = a[i]; a[i] = a[i + d]; a[i + d] = t; render(); }
-function saveOrder() { var d = ui.draft; ui.draft = null; call('guardarOrden', [d]); }
+function commitOrder() { var d = ui.draft; ui.draft = null; call('saveOrder', [d]); }
 
 function openTeam() {
-  $('q-mem').innerHTML = S.orden.map(function (m) { return '<option>' + esc(m) + '</option>'; }).join('');
+  $('q-mem').innerHTML = S.order.map(function (m) { return '<option>' + esc(m) + '</option>'; }).join('');
   $('n-mem').value = '';
   openModal('m-team');
 }
-function addMember() { call('agregarMiembro', [$('n-mem').value], function () { $('n-mem').value = ''; openTeam(); }); }
-function removeMember() {
+function onAddMember() { call('addMember', [$('n-mem').value], function () { $('n-mem').value = ''; openTeam(); }); }
+function onRemoveMember() {
   var m = $('q-mem').value;
-  if (confirm('¿Quitar a ' + m + ' del equipo? Su historial se conserva.')) call('quitarMiembro', [m], openTeam);
+  if (confirm('Remove ' + m + ' from the team? Their history is kept.')) call('removeMember', [m], openTeam);
 }
 
 function openEdit(id) {
@@ -613,28 +613,28 @@ function openEdit(id) {
     if (list.indexOf(sel) < 0) list = [sel].concat(list);
     return list.map(function (x) { return '<option' + (x === sel ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('');
   };
-  $('m-edit-sub').textContent = r.fecha + (r.registradoPor ? ' · registrada por ' + r.registradoPor : '');
-  $('e-mem').innerHTML = opts(S.orden.slice(), r.miembro);
-  $('e-cli').innerHTML = opts(S.config.clientes.slice(), r.cliente);
-  $('e-pri').innerHTML = opts(S.config.prioridades.slice(), r.prioridad);
+  $('m-edit-sub').textContent = r.date + (r.createdBy ? ' · logged by ' + r.createdBy : '');
+  $('e-mem').innerHTML = opts(S.order.slice(), r.member);
+  $('e-cli').innerHTML = opts(S.config.clients.slice(), r.client);
+  $('e-pri').innerHTML = opts(S.config.priorities.slice(), r.priority);
   openModal('m-edit');
 }
-function saveRq() {
-  call('editarRq', [ui.editing.id, $('e-mem').value, $('e-cli').value, $('e-pri').value], function () { closeModal('m-edit'); });
+function onSaveRq() {
+  call('editRq', [ui.editing.id, $('e-mem').value, $('e-cli').value, $('e-pri').value], function () { closeModal('m-edit'); });
 }
-function delRq() {
-  if (!confirm('¿Eliminar esta RQ? No se puede deshacer.')) return;
-  call('eliminarRq', [ui.editing.id], function () { closeModal('m-edit'); });
+function onDeleteRq() {
+  if (!confirm('Delete this RQ? This cannot be undone.')) return;
+  call('deleteRq', [ui.editing.id], function () { closeModal('m-edit'); });
 }
 
-function exportCsv() {
+function downloadCsv() {
   google.script.run.withSuccessHandler(function (csv) {
     var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'turnos_rqs_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.download = 'rq_rotation_' + new Date().toISOString().slice(0, 10) + '.csv';
     document.body.appendChild(a); a.click(); a.remove();
-  }).withFailureHandler(function (e) { toast(e.message, true); }).exportarCsv();
+  }).withFailureHandler(function (e) { toast(e.message, true); }).exportCsv();
 }
 
 function openModal(id) { $(id).classList.add('open'); }
@@ -650,7 +650,7 @@ function toast(msg, err) {
   clearTimeout(tt); tt = setTimeout(function () { t.className = 'toast' + (err ? ' err' : ''); }, 3200);
 }
 
-// Carga inicial y refresco automático cada 30 s (para ver lo que registran otros).
+// Initial load and auto-refresh every 30 s (to see what others log).
 refresh();
 setInterval(function () {
   var a = document.activeElement;

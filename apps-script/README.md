@@ -1,41 +1,41 @@
-# Turnos RQ's — versión Google Apps Script
+# RQ Rotation — Google Apps Script version
 
-App web para repartir solicitudes (RQs) entre un equipo por turnos rotativos. Es la evolución de la app de Streamlit que está en la raíz de este repo: misma lógica, pero corre dentro de Google Workspace, sin servidores ni credenciales que administrar.
+Web app that hands out incoming requests (RQs) to a team in a round-robin rotation. It's the evolution of the Streamlit app at the root of this repo: same logic, but it runs inside Google Workspace with no servers or credentials to manage.
 
-![Vista de la app](docs/captura.png)
+![App screenshot](docs/screenshot.png)
 
-*Datos de ejemplo.*
+*Sample data.*
 
-## Qué hace
+## What it does
 
-- Muestra a quién le toca y registra la RQ (cliente + prioridad) con un clic; el turno avanza solo.
-- Orden de rotación editable, saltar turno, agregar y quitar personas sin perder el historial.
-- Historial con búsqueda, filtros por persona y mes, paginación, corrección y borrado.
-- Indicadores por persona, mezcla de prioridades y por cliente, filtrables por mes.
-- Exportación a CSV.
-- Solo entran cuentas del dominio configurado; cada RQ guarda quién la registró y quién la editó.
-- Migración desde la versión Streamlit con respaldo automático y deducción del año en fechas sin año.
+- Shows whose turn it is and logs the RQ (client + priority) in one click; the turn advances automatically.
+- Editable rotation order, skip turn, add and remove people without losing history.
+- History with search, filters by person and month, pagination, editing and deletion.
+- Insights by person, priority mix and client, filterable by month.
+- CSV export.
+- Only accounts from the configured domain can get in; each RQ records who logged it and who edited it.
+- Migration from the Streamlit version with an automatic backup and year inference for dates stored without a year.
 
-## Cómo está hecho
+## How it's built
 
-| Pieza | Detalle |
+| Piece | Details |
 |---|---|
-| Datos | Google Sheet con tres pestañas: `RQs`, `Estado`, `Config` |
-| Servidor | `Code.gs`: API para la UI, `LockService` para evitar choques cuando dos personas registran a la vez, validación y control de acceso por dominio |
-| Interfaz | `Index.html`: HTML/CSS/JS sin librerías, responsive, se repinta con el estado que devuelve cada llamada y se refresca cada 30 s |
-| Marca | `Marca.html`: tipografía y logo aislados en un archivo, para cambiar de marca sin tocar la interfaz |
-| Configuración | Pestaña `Config` (clave/valor): nombre, subtítulo, clientes, prioridades y dominio, sin tocar código |
-| Migración | `Migracion.gs`: lee el formato de Streamlit (`"29 oct 10:15"`), deduce el año y copia el estado de la rotación |
+| Data | Google Sheet with three tabs: `RQs`, `State`, `Config` |
+| Server | `Code.gs`: API for the UI, `LockService` to avoid collisions when two people log at the same time, validation and domain-based access control |
+| Interface | `Index.html`: HTML/CSS/JS with no libraries, responsive, repaints from the state each call returns and refreshes every 30 s |
+| Brand | `Brand.html`: font and logo isolated in one file, so the brand can change without touching the interface |
+| Config | `Config` tab (key/value): name, subtitle, clients, priorities and domain, no code changes needed |
+| Migration | `Migration.gs`: reads the Streamlit format (`"29 oct 10:15"`), infers the year and copies the rotation state |
 
-Como el script está vinculado a la hoja, copiar la hoja copia la app completa: así se reparte como plantilla a otros equipos.
+Because the script is bound to the sheet, copying the sheet copies the whole app: that's how it's shared as a template with other teams.
 
-## Instalación
+## Setup
 
-Ver [PASO_A_PASO.md](PASO_A_PASO.md).
+See [SETUP_GUIDE.md](SETUP_GUIDE.md).
 
-## Desarrollo local
+## Local development
 
-No hace falta para usarla, pero para editar desde el computador se puede usar [clasp](https://github.com/google/clasp):
+Not needed to use it, but to edit from your computer you can use [clasp](https://github.com/google/clasp):
 
 ```bash
 npm i -g @google/clasp

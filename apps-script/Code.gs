@@ -1,296 +1,296 @@
 /**
- * Turnos de RQ's — versión Google Apps Script
+ * RQ Rotation — Google Apps Script version
  * ------------------------------------------------------------------
- * App web ligada a una Google Sheet (script "vinculado" a la hoja).
- * La hoja guarda todo:
- *   - RQs     → historial de turnos tomados (una fila por RQ)
- *   - Estado  → a quién le toca y el orden de rotación
- *   - Config  → nombre del equipo, clientes, prioridades, dominio
+ * Web app bound to a Google Sheet (a "container-bound" script).
+ * The sheet stores everything:
+ *   - RQs     → history of taken requests (one row per RQ)
+ *   - State   → whose turn it is and the rotation order
+ *   - Config  → team name, clients, priorities, allowed domain
  *
- * Para usarla en otro equipo solo se copia la hoja (el script viaja con
- * ella), se edita la pestaña Config y se implementa como app web.
- * Ver LEEME.md.
+ * To reuse it for another team, copy the sheet (the script travels with
+ * it), edit the Config tab and deploy it as a web app.
+ * See SETUP_GUIDE.md.
  */
 
-// ---------------- Nombres de hojas y columnas ----------------
+// ---------------- Sheet and column names ----------------
 const SHEET_RQS = 'RQs';
-const SHEET_ESTADO = 'Estado';
+const SHEET_STATE = 'State';
 const SHEET_CONFIG = 'Config';
 
-const RQ_HEADERS = ['id', 'fecha', 'miembro', 'cliente', 'prioridad',
-                    'registrado_por', 'editado_por', 'editado_en', 'origen'];
-const COL = { id: 0, fecha: 1, miembro: 2, cliente: 3, prioridad: 4,
-              registrado_por: 5, editado_por: 6, editado_en: 7, origen: 8 };
+const RQ_HEADERS = ['id', 'date', 'member', 'client', 'priority',
+                    'created_by', 'edited_by', 'edited_at', 'source'];
+const COL = { id: 0, date: 1, member: 2, client: 3, priority: 4,
+              created_by: 5, edited_by: 6, edited_at: 7, source: 8 };
 
-// Valores por defecto: solo se usan al crear la pestaña Config la primera vez.
+// Defaults: only used the first time the Config tab is created.
 const DEFAULT_CONFIG = {
-  equipo: "Turnos RQ's",
-  subtitulo: 'Rotación del equipo · datos compartidos',
-  zona_horaria: 'America/Bogota',
-  dominio_permitido: '',            // ej. "empresa.com"; vacío = no restringe
-  miembros: ['Ana', 'Luis', 'Sofía', 'Diego', 'Valeria'],
-  clientes: ['Cliente A', 'Cliente B', 'Cliente C', 'Cliente D', 'Soporte (otras cuentas)'],
-  prioridades: ['Low', 'Medium', 'High']
+  team: 'RQ Rotation',
+  subtitle: 'Team rotation · shared data',
+  timezone: 'America/Bogota',
+  allowed_domain: '',               // e.g. "company.com"; empty = no restriction
+  members: ['Ana', 'Luis', 'Sofia', 'Diego', 'Valeria'],
+  clients: ['Client A', 'Client B', 'Client C', 'Client D', 'Support (other accounts)'],
+  priorities: ['Low', 'Medium', 'High']
 };
 
 // ================================================================
-// ===================  Punto de entrada web  =====================
+// =======================  Web entry point  ======================
 // ================================================================
 function doGet() {
   setup_();
   const cfg = getConfig_();
   const tpl = HtmlService.createTemplateFromFile('Index');
-  tpl.equipo = cfg.equipo;
+  tpl.team = cfg.team;
   return tpl.evaluate()
-    .setTitle(cfg.equipo)
+    .setTitle(cfg.team)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
 }
 
-/** Menú en la hoja para tareas de administración. */
+/** Sheet menu for admin tasks. */
 function onOpen() {
-  SpreadsheetApp.getUi().createMenu("Turnos RQ's")
-    .addItem('Preparar hojas (setup)', 'setup')
-    .addItem('Migrar desde la app de Streamlit…', 'migrarDesdeStreamlitUI')
+  SpreadsheetApp.getUi().createMenu('RQ Rotation')
+    .addItem('Prepare sheets (setup)', 'setup')
+    .addItem('Migrate from the Streamlit app…', 'migrateFromStreamlitUI')
     .addToUi();
 }
 
 // ================================================================
-// ===================  API llamada desde la UI  ==================
+// ======================  API called by the UI  ==================
 // ================================================================
-// Todas devuelven el estado completo para que la UI se repinte.
+// Every call returns the full state so the UI can repaint.
 
 function getState() {
   checkAccess_();
   return buildState_();
 }
 
-function tomarRq(cliente, prioridad) {
+function takeRq(client, priority) {
   return withLock_(function () {
     const cfg = getConfig_();
-    validarCliente_(cfg, cliente);
-    validarPrioridad_(cfg, prioridad);
-    const est = leerEstado_();
-    if (!est.orden.length) throw new Error('No hay miembros en la rotación.');
-    const miembro = est.orden[est.indice % est.orden.length];
-    hoja_(SHEET_RQS).appendRow([
-      Utilities.getUuid(), new Date(), miembro, cliente, prioridad,
-      usuario_(), '', '', 'app'
+    validateClient_(cfg, client);
+    validatePriority_(cfg, priority);
+    const st = readState_();
+    if (!st.order.length) throw new Error('There are no members in the rotation.');
+    const member = st.order[st.index % st.order.length];
+    sheet_(SHEET_RQS).appendRow([
+      Utilities.getUuid(), new Date(), member, client, priority,
+      currentUser_(), '', '', 'app'
     ]);
-    guardarEstado_((est.indice + 1) % est.orden.length, est.orden);
-    return { state: buildState_(), msg: 'RQ de ' + cliente + ' registrada para ' + miembro };
+    saveState_((st.index + 1) % st.order.length, st.order);
+    return { state: buildState_(), msg: client + ' RQ logged for ' + member };
   });
 }
 
-function editarRq(id, miembro, cliente, prioridad) {
+function editRq(id, member, client, priority) {
   return withLock_(function () {
     const cfg = getConfig_();
-    validarCliente_(cfg, cliente);
-    validarPrioridad_(cfg, prioridad);
-    const fila = buscarFila_(id);
-    const sh = hoja_(SHEET_RQS);
-    sh.getRange(fila, COL.miembro + 1, 1, 3).setValues([[miembro, cliente, prioridad]]);
-    sh.getRange(fila, COL.editado_por + 1, 1, 2).setValues([[usuario_(), new Date()]]);
-    return { state: buildState_(), msg: 'RQ corregida' };
+    validateClient_(cfg, client);
+    validatePriority_(cfg, priority);
+    const row = findRow_(id);
+    const sh = sheet_(SHEET_RQS);
+    sh.getRange(row, COL.member + 1, 1, 3).setValues([[member, client, priority]]);
+    sh.getRange(row, COL.edited_by + 1, 1, 2).setValues([[currentUser_(), new Date()]]);
+    return { state: buildState_(), msg: 'RQ updated' };
   });
 }
 
-function eliminarRq(id) {
+function deleteRq(id) {
   return withLock_(function () {
-    hoja_(SHEET_RQS).deleteRow(buscarFila_(id));
-    return { state: buildState_(), msg: 'RQ eliminada' };
+    sheet_(SHEET_RQS).deleteRow(findRow_(id));
+    return { state: buildState_(), msg: 'RQ deleted' };
   });
 }
 
-function saltarTurno() {
+function skipTurn() {
   return withLock_(function () {
-    const est = leerEstado_();
-    guardarEstado_((est.indice + 1) % est.orden.length, est.orden);
-    return { state: buildState_(), msg: 'Turno saltado' };
+    const st = readState_();
+    saveState_((st.index + 1) % st.order.length, st.order);
+    return { state: buildState_(), msg: 'Turn skipped' };
   });
 }
 
-function guardarOrden(orden) {
+function saveOrder(order) {
   return withLock_(function () {
-    const est = leerEstado_();
-    const limpio = orden.map(String).map(function (s) { return s.trim(); }).filter(String);
-    if (limpio.length !== est.orden.length ||
-        limpio.slice().sort().join('|') !== est.orden.slice().sort().join('|')) {
-      throw new Error('El orden cambió mientras editabas. Actualiza e intenta de nuevo.');
+    const st = readState_();
+    const clean = order.map(String).map(function (s) { return s.trim(); }).filter(String);
+    if (clean.length !== st.order.length ||
+        clean.slice().sort().join('|') !== st.order.slice().sort().join('|')) {
+      throw new Error('The order changed while you were editing. Refresh and try again.');
     }
-    // Mantiene el turno en la misma persona aunque cambie su posición.
-    const actual = est.orden[est.indice % est.orden.length];
-    guardarEstado_(limpio.indexOf(actual), limpio);
-    return { state: buildState_(), msg: 'Orden actualizado para el equipo' };
+    // Keep the turn on the same person even if their position changes.
+    const current = st.order[st.index % st.order.length];
+    saveState_(clean.indexOf(current), clean);
+    return { state: buildState_(), msg: 'Order updated for the whole team' };
   });
 }
 
-function agregarMiembro(nombre) {
+function addMember(name) {
   return withLock_(function () {
-    nombre = String(nombre || '').trim();
-    if (!nombre) throw new Error('Escribe un nombre.');
-    const est = leerEstado_();
-    if (est.orden.indexOf(nombre) >= 0) throw new Error(nombre + ' ya está en el equipo.');
-    guardarEstado_(est.indice, est.orden.concat([nombre]));
-    return { state: buildState_(), msg: nombre + ' agregado al equipo' };
+    name = String(name || '').trim();
+    if (!name) throw new Error('Type a name.');
+    const st = readState_();
+    if (st.order.indexOf(name) >= 0) throw new Error(name + ' is already on the team.');
+    saveState_(st.index, st.order.concat([name]));
+    return { state: buildState_(), msg: name + ' added to the team' };
   });
 }
 
-function quitarMiembro(nombre) {
+function removeMember(name) {
   return withLock_(function () {
-    const est = leerEstado_();
-    if (est.orden.length <= 1) throw new Error('Debe quedar al menos una persona.');
-    const pos = est.orden.indexOf(nombre);
-    if (pos < 0) throw new Error(nombre + ' no está en el equipo.');
-    const actual = est.orden[est.indice % est.orden.length];
-    const nueva = est.orden.filter(function (m) { return m !== nombre; });
-    // Si se quita a quien le tocaba, el turno pasa al siguiente.
-    let idx = actual === nombre ? pos % nueva.length : nueva.indexOf(actual);
-    guardarEstado_(idx, nueva);
-    return { state: buildState_(), msg: nombre + ' quitado del equipo' };
+    const st = readState_();
+    if (st.order.length <= 1) throw new Error('At least one person must remain.');
+    const pos = st.order.indexOf(name);
+    if (pos < 0) throw new Error(name + ' is not on the team.');
+    const current = st.order[st.index % st.order.length];
+    const next = st.order.filter(function (m) { return m !== name; });
+    // If the person whose turn it was is removed, the turn moves to the next one.
+    const idx = current === name ? pos % next.length : next.indexOf(current);
+    saveState_(idx, next);
+    return { state: buildState_(), msg: name + ' removed from the team' };
   });
 }
 
-/** CSV con todo el historial (para el botón "Exportar"). */
-function exportarCsv() {
+/** CSV with the whole history (for the "Export" button). */
+function exportCsv() {
   checkAccess_();
   const cfg = getConfig_();
-  const rows = leerRqs_(cfg);
-  const head = ['fecha', 'miembro', 'cliente', 'prioridad', 'registrado_por', 'origen'];
+  const rows = readRqs_(cfg);
+  const head = ['date', 'member', 'client', 'priority', 'created_by', 'source'];
   const esc = function (v) {
     v = String(v == null ? '' : v);
     return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
   };
   const lines = [head.join(',')].concat(rows.map(function (r) {
-    return [r.fechaIso, r.miembro, r.cliente, r.prioridad, r.registradoPor, r.origen]
+    return [r.dateIso, r.member, r.client, r.priority, r.createdBy, r.source]
       .map(esc).join(',');
   }));
   return lines.join('\n');
 }
 
 // ================================================================
-// =========================  Internos  ===========================
+// ==========================  Internals  =========================
 // ================================================================
 
 function buildState_() {
   const cfg = getConfig_();
-  const est = leerEstado_();
+  const st = readState_();
   return {
     config: {
-      equipo: cfg.equipo, subtitulo: cfg.subtitulo,
-      clientes: cfg.clientes, prioridades: cfg.prioridades
+      team: cfg.team, subtitle: cfg.subtitle,
+      clients: cfg.clients, priorities: cfg.priorities
     },
-    orden: est.orden,
-    indice: est.orden.length ? est.indice % est.orden.length : 0,
-    rqs: leerRqs_(cfg),
-    usuario: usuario_()
+    order: st.order,
+    index: st.order.length ? st.index % st.order.length : 0,
+    rqs: readRqs_(cfg),
+    user: currentUser_()
   };
 }
 
-function leerRqs_(cfg) {
-  const sh = hoja_(SHEET_RQS);
+function readRqs_(cfg) {
+  const sh = sheet_(SHEET_RQS);
   const n = sh.getLastRow() - 1;
   if (n < 1) return [];
-  const tz = cfg.zona_horaria;
+  const tz = cfg.timezone;
   return sh.getRange(2, 1, n, RQ_HEADERS.length).getValues()
     .filter(function (r) { return r[COL.id]; })
     .map(function (r) {
-      const f = r[COL.fecha] instanceof Date ? r[COL.fecha] : new Date(r[COL.fecha]);
+      const d = r[COL.date] instanceof Date ? r[COL.date] : new Date(r[COL.date]);
       return {
         id: String(r[COL.id]),
-        ts: f.getTime(),
-        fechaIso: Utilities.formatDate(f, tz, "yyyy-MM-dd'T'HH:mm"),
-        fecha: Utilities.formatDate(f, tz, 'dd/MM/yyyy HH:mm'),
-        mes: Utilities.formatDate(f, tz, 'yyyy-MM'),
-        miembro: String(r[COL.miembro]),
-        cliente: String(r[COL.cliente]),
-        prioridad: String(r[COL.prioridad]),
-        registradoPor: String(r[COL.registrado_por] || ''),
-        origen: String(r[COL.origen] || '')
+        ts: d.getTime(),
+        dateIso: Utilities.formatDate(d, tz, "yyyy-MM-dd'T'HH:mm"),
+        date: Utilities.formatDate(d, tz, 'MMM d, yyyy HH:mm'),
+        month: Utilities.formatDate(d, tz, 'yyyy-MM'),
+        member: String(r[COL.member]),
+        client: String(r[COL.client]),
+        priority: String(r[COL.priority]),
+        createdBy: String(r[COL.created_by] || ''),
+        source: String(r[COL.source] || '')
       };
     })
-    .sort(function (a, b) { return b.ts - a.ts; });   // más reciente primero
+    .sort(function (a, b) { return b.ts - a.ts; });   // newest first
 }
 
-function leerEstado_() {
-  const sh = hoja_(SHEET_ESTADO);
+function readState_() {
+  const sh = sheet_(SHEET_STATE);
   const v = sh.getRange(2, 1, 1, 2).getValues()[0];
-  const orden = String(v[1] || '').split(',').map(function (s) { return s.trim(); }).filter(String);
-  return { indice: parseInt(v[0], 10) || 0, orden: orden };
+  const order = String(v[1] || '').split(',').map(function (s) { return s.trim(); }).filter(String);
+  return { index: parseInt(v[0], 10) || 0, order: order };
 }
 
-function guardarEstado_(indice, orden) {
-  hoja_(SHEET_ESTADO).getRange(2, 1, 1, 4)
-    .setValues([[Math.max(0, indice), orden.join(','), usuario_(), new Date()]]);
+function saveState_(index, order) {
+  sheet_(SHEET_STATE).getRange(2, 1, 1, 4)
+    .setValues([[Math.max(0, index), order.join(','), currentUser_(), new Date()]]);
 }
 
-function buscarFila_(id) {
-  const sh = hoja_(SHEET_RQS);
+function findRow_(id) {
+  const sh = sheet_(SHEET_RQS);
   const n = sh.getLastRow() - 1;
   if (n >= 1) {
     const ids = sh.getRange(2, 1, n, 1).getValues();
     for (let i = 0; i < ids.length; i++) if (String(ids[i][0]) === String(id)) return i + 2;
   }
-  throw new Error('No encontré esa RQ. Pulsa Actualizar.');
+  throw new Error('Could not find that RQ. Click Refresh.');
 }
 
 /**
- * Config: pestaña con dos columnas "clave | valor".
- * Las listas (cliente, prioridad) van una por fila con la misma clave.
+ * Config: a tab with two columns "key | value".
+ * Lists (client, priority) go one per row, repeating the key.
  */
 function getConfig_() {
   const cache = CacheService.getScriptCache();
   const hit = cache.get('config');
   if (hit) return JSON.parse(hit);
-  const vals = hoja_(SHEET_CONFIG).getDataRange().getValues().slice(1);
-  const cfg = { clientes: [], prioridades: [] };
+  const vals = sheet_(SHEET_CONFIG).getDataRange().getValues().slice(1);
+  const cfg = { clients: [], priorities: [] };
   vals.forEach(function (r) {
     const k = String(r[0] || '').trim().toLowerCase();
     const v = String(r[1] == null ? '' : r[1]).trim();
     if (!k || !v) return;
-    if (k === 'cliente') cfg.clientes.push(v);
-    else if (k === 'prioridad') cfg.prioridades.push(v);
+    if (k === 'client') cfg.clients.push(v);
+    else if (k === 'priority') cfg.priorities.push(v);
     else cfg[k] = v;
   });
-  ['equipo', 'subtitulo', 'zona_horaria', 'dominio_permitido'].forEach(function (k) {
+  ['team', 'subtitle', 'timezone', 'allowed_domain'].forEach(function (k) {
     if (cfg[k] == null) cfg[k] = DEFAULT_CONFIG[k];
   });
-  if (!cfg.prioridades.length) cfg.prioridades = DEFAULT_CONFIG.prioridades.slice();
+  if (!cfg.priorities.length) cfg.priorities = DEFAULT_CONFIG.priorities.slice();
   cache.put('config', JSON.stringify(cfg), 60);
   return cfg;
 }
 
-/** Cuando alguien edita Config a mano, se limpia la caché. */
+/** When someone edits Config by hand, clear the cache. */
 function onEdit(e) {
   if (e && e.range && e.range.getSheet().getName() === SHEET_CONFIG) {
     CacheService.getScriptCache().remove('config');
   }
 }
 
-function validarCliente_(cfg, c) {
-  if (cfg.clientes.indexOf(c) < 0) throw new Error('Cliente no válido: ' + c);
+function validateClient_(cfg, c) {
+  if (cfg.clients.indexOf(c) < 0) throw new Error('Invalid client: ' + c);
 }
-function validarPrioridad_(cfg, p) {
-  if (cfg.prioridades.indexOf(p) < 0) throw new Error('Prioridad no válida: ' + p);
+function validatePriority_(cfg, p) {
+  if (cfg.priorities.indexOf(p) < 0) throw new Error('Invalid priority: ' + p);
 }
 
-function usuario_() {
+function currentUser_() {
   return Session.getActiveUser().getEmail() || '';
 }
 
 function checkAccess_() {
-  const dom = getConfig_().dominio_permitido;
+  const dom = getConfig_().allowed_domain;
   if (!dom) return;
-  const email = usuario_();
+  const email = currentUser_();
   if (!email || email.split('@')[1].toLowerCase() !== dom.toLowerCase()) {
-    throw new Error('Esta app es solo para cuentas @' + dom);
+    throw new Error('This app is only for @' + dom + ' accounts');
   }
 }
 
 function withLock_(fn) {
   checkAccess_();
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(15000)) throw new Error('Otra persona está guardando. Intenta de nuevo.');
+  if (!lock.tryLock(15000)) throw new Error('Someone else is saving. Try again.');
   try {
     const out = fn();
     SpreadsheetApp.flush();
@@ -301,23 +301,23 @@ function withLock_(fn) {
 }
 
 function ss_() {
-  // Script vinculado a la hoja. Si se usa como script independiente,
-  // guardar el ID en Propiedades del script con la clave SHEET_ID.
+  // Bound to the sheet. If used as a standalone script, store the sheet ID
+  // in Script Properties under the key SHEET_ID.
   const id = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
   return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
 }
 
-function hoja_(nombre) {
-  const sh = ss_().getSheetByName(nombre);
-  if (!sh) throw new Error('Falta la hoja "' + nombre + '". Ejecuta setup.');
+function sheet_(name) {
+  const sh = ss_().getSheetByName(name);
+  if (!sh) throw new Error('Missing sheet "' + name + '". Run setup.');
   return sh;
 }
 
 // ================================================================
-// ==========================  Setup  =============================
+// ============================  Setup  ===========================
 // ================================================================
 
-/** Crea las pestañas que falten. Seguro de ejecutar varias veces. */
+/** Creates any missing tabs. Safe to run more than once. */
 function setup() { setup_(); }
 
 function setup_() {
@@ -329,29 +329,29 @@ function setup_() {
     sh.getRange('B:B').setNumberFormat('yyyy-mm-dd hh:mm');
     sh.getRange('H:H').setNumberFormat('yyyy-mm-dd hh:mm');
   }
-  if (!ss.getSheetByName(SHEET_ESTADO)) {
-    const sh = ss.insertSheet(SHEET_ESTADO);
+  if (!ss.getSheetByName(SHEET_STATE)) {
+    const sh = ss.insertSheet(SHEET_STATE);
     sh.getRange(1, 1, 2, 4).setValues([
-      ['turno_indice', 'orden', 'actualizado_por', 'actualizado_en'],
-      [0, DEFAULT_CONFIG.miembros.join(','), '', new Date()]
+      ['turn_index', 'order', 'updated_by', 'updated_at'],
+      [0, DEFAULT_CONFIG.members.join(','), '', new Date()]
     ]);
     sh.getRange(1, 1, 1, 4).setFontWeight('bold');
   }
   if (!ss.getSheetByName(SHEET_CONFIG)) {
     const sh = ss.insertSheet(SHEET_CONFIG);
-    const rows = [['clave', 'valor']];
-    ['equipo', 'subtitulo', 'zona_horaria', 'dominio_permitido'].forEach(function (k) {
+    const rows = [['key', 'value']];
+    ['team', 'subtitle', 'timezone', 'allowed_domain'].forEach(function (k) {
       rows.push([k, DEFAULT_CONFIG[k]]);
     });
-    DEFAULT_CONFIG.prioridades.forEach(function (p) { rows.push(['prioridad', p]); });
-    DEFAULT_CONFIG.clientes.forEach(function (c) { rows.push(['cliente', c]); });
+    DEFAULT_CONFIG.priorities.forEach(function (p) { rows.push(['priority', p]); });
+    DEFAULT_CONFIG.clients.forEach(function (c) { rows.push(['client', c]); });
     sh.getRange(1, 1, rows.length, 2).setValues(rows);
     sh.getRange(1, 1, 1, 2).setFontWeight('bold');
     sh.setColumnWidth(1, 160); sh.setColumnWidth(2, 320);
   }
 }
 
-/** Inserta otro archivo HTML del proyecto (se usa para Marca.html). */
-function include(nombre) {
-  return HtmlService.createHtmlOutputFromFile(nombre).getContent();
+/** Inlines another HTML file from the project (used for Brand.html). */
+function include(name) {
+  return HtmlService.createHtmlOutputFromFile(name).getContent();
 }
