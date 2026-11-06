@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<?!= include('Brand'); ?>
+<style>
+  /* ================================================================
+     SBA Hub visual language: navy #000050, accent #5465FF,
+     cyan #00DBEE, lime #B0F467, ivory background with soft glows.
+     ================================================================ */
+  :root {
+    --navy: #000050;
+    --ink: #14163A;
+    --accent: #5465FF;
+    --cyan: #00DBEE;
+    --cyan-dark: #00838F;
+    --lime: #B0F467;
+    --paper: #F7F9F2;
+    --line: #ECEEF6;
+    --line-2: #E2E8F0;
+    --text: #0F172A;
+    --text-2: #475569;
+    --muted: #7B7E9E;
+    --muted-2: #8A8DAD;
+    --low: #047857;  --low-bg: rgba(5,150,105,.12);  --low-bd: rgba(5,150,105,.3);
+    --med: #B45309;  --med-bg: rgba(217,119,6,.12);  --med-bd: rgba(217,119,6,.3);
+    --high: #B42318; --high-bg: rgba(217,45,32,.10); --high-bd: rgba(217,45,32,.3);
+    --radius: 12px;
+    --radius-lg: 16px;
+    --shadow-card: 0 10px 24px -10px rgba(20,20,60,.14);
+    --shadow-panel: 0 20px 40px -15px rgba(0,0,80,.10);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper, #F7F9F2); color: var(--navy, #000050); min-height: 100vh;
+    font-family: var(--font-brand, 'WPP'), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased; position: relative; isolation: isolate; font-size: 14px;
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(circle at 8% 15%, rgba(0,219,238,.14), transparent 38%),
+                radial-gradient(circle at 95% 30%, rgba(120,139,255,.18), transparent 42%),
+                radial-gradient(circle at 40% 95%, rgba(84,101,255,.12), transparent 40%);
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+
+  /* ===== TOPBAR ===== */
+  .topbar {
+    background: rgba(255,255,255,.88); backdrop-filter: blur(20px) saturate(130%);
+    padding: 14px 36px; display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    position: sticky; top: 0; z-index: 90;
+    border-bottom: 1px solid rgba(0,0,80,.08); box-shadow: 0 4px 20px rgba(20,20,60,.06);
+  }
+  .brand { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .brand-divider { width: 1px; height: 20px; background: rgba(0,0,80,.16); }
+  .brand-name { font-weight: 800; font-size: 18px; letter-spacing: -.4px; }
+  .brand-sub { font-size: 9.5px; color: var(--accent, #5465FF); letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
+  .top-actions { display: flex; align-items: center; gap: 10px; }
+  .user-chip { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px 0 6px;
+               border: 1px solid rgba(0,0,80,.12); border-radius: 999px; background: #fff; font-size: 12px; color: var(--text-2, #475569); }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 700;
+            font-size: 11px; color: #fff; background: var(--accent, #5465FF); }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative; overflow: hidden; color: #fff; padding: 44px 40px 48px;
+    background: radial-gradient(circle at 18% 25%, rgba(84,101,255,.42), transparent 45%),
+                radial-gradient(circle at 84% 15%, rgba(116,91,255,.32), transparent 42%),
+                radial-gradient(circle at 68% 100%, rgba(0,219,238,.12), transparent 42%),
+                linear-gradient(120deg, #0A1048 0%, #151D67 42%, #29289A 76%, #3931B7 100%);
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+  .hero::after {
+    content: 'ROTATION ROTATION ROTATION ROTATION'; position: absolute; top: 50%; left: -30px;
+    transform: translateY(-55%); font-size: clamp(130px, 16vw, 230px); font-weight: 700; letter-spacing: -6px;
+    line-height: 1; white-space: nowrap; color: rgba(255,255,255,.045); pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 2; max-width: 1240px; margin: 0 auto;
+                display: grid; grid-template-columns: minmax(0,1fr) 440px; gap: 40px; align-items: center; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 6px 14px; border-radius: 7px;
+             background: rgba(7,10,55,.62); border: 1px solid rgba(176,244,103,.36); color: var(--lime, #B0F467);
+             font-size: 10.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+  .hero h1 { margin: 0 0 14px; font-size: clamp(36px, 4vw, 54px); line-height: 1.08; font-weight: 700; letter-spacing: -1.2px; }
+  .highlight { background: linear-gradient(90deg, #B0F467 0%, #C9FF7A 55%, #77E7B2 100%);
+               -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: var(--lime, #B0F467); }
+  .hero p { margin: 0; color: rgba(255,255,255,.82); font-size: 15.5px; line-height: 1.7; }
+  .hero p b { color: #fff; font-weight: 700; }
+  .hero-rule { width: 58px; height: 4px; margin-top: 22px; border-radius: 4px; background: linear-gradient(90deg, #B0F467, #77E7B2); }
+  .queue { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .queue span { padding: 5px 10px; border-radius: 6px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+                font-size: 11.5px; color: rgba(255,255,255,.82); }
+  .queue span.now { background: var(--lime, #B0F467); color: var(--navy, #000050); border-color: var(--lime, #B0F467); font-weight: 700; }
+
+  /* Log card inside the hero */
+  .take { background: #fff; color: var(--navy, #000050); border-radius: var(--radius-lg, 16px); padding: 22px;
+          box-shadow: 0 30px 60px -20px rgba(0,0,40,.55); position: relative; overflow: hidden; }
+  .take::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+                  background: linear-gradient(90deg, var(--lime, #B0F467) 0 28%, var(--cyan, #00DBEE) 28% 56%, var(--accent, #5465FF) 56% 100%); }
+  .kicker { font-size: 10px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; color: var(--accent, #5465FF); }
+  .take h2 { margin: 6px 0 16px; font-size: 19px; font-weight: 800; letter-spacing: -.3px; color: var(--ink, #14163A); }
+  .field { margin-bottom: 14px; }
+  .field > label, .field-lbl { display: block; font-size: 10.5px; font-weight: 700; color: var(--muted-2, #8A8DAD);
+                               text-transform: uppercase; letter-spacing: .8px; margin-bottom: 7px; }
+  .select, .input {
+    width: 100%; height: 44px; padding: 0 12px; border: 1px solid rgba(0,0,80,.14); border-radius: 9px;
+    background: rgba(0,0,80,.03); color: var(--navy, #000050); font-weight: 600; font-size: 13.5px; outline: none;
+    transition: border-color .16s, box-shadow .16s;
+  }
+  .select:focus, .input:focus { border-color: var(--cyan, #00DBEE); box-shadow: 0 0 0 4px rgba(0,219,238,.12); background: #fff; }
+  .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; padding: 4px; border-radius: 10px;
+         background: rgba(0,0,80,.04); border: 1px solid rgba(0,0,80,.1); }
+  .seg button { height: 36px; border: 0; border-radius: 7px; background: transparent; cursor: pointer;
+                font-weight: 700; font-size: 12.5px; color: var(--muted, #7B7E9E); transition: .15s; }
+  .seg button:hover { color: var(--navy, #000050); }
+  .seg button[aria-pressed=true] { background: #fff; color: var(--c, #000050); box-shadow: 0 2px 6px rgba(0,0,80,.12), inset 0 0 0 1px var(--c, #000050); }
+  .btn-take { width: 100%; height: 50px; margin-top: 4px; border: 0; border-radius: 11px; cursor: pointer;
+              background: var(--navy, #000050); color: #fff; font-weight: 700; font-size: 14.5px;
+              display: flex; align-items: center; justify-content: center; gap: 10px; transition: .16s; }
+  .btn-take:hover { background: var(--accent, #5465FF); }
+  .btn-take .chk { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px;
+                   background: var(--lime, #B0F467); color: var(--navy, #000050); font-size: 13px; font-weight: 900; }
+  .btn-take:disabled { opacity: .55; cursor: default; background: var(--navy, #000050); }
+
+  /* ===== CONTENT ===== */
+  .content { max-width: 1320px; margin: 0 auto; padding: 26px 40px 60px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+  .kpi { background: #fff; border: 1px solid var(--line, #ECEEF6); border-radius: var(--radius, 12px); box-shadow: var(--shadow-card, 0 10px 24px -10px rgba(20,20,60,.14));
+         padding: 18px 20px; position: relative; overflow: hidden; }
+  .kpi::after { content: ''; position: absolute; left: 20px; bottom: 0; width: 36px; height: 3px; border-radius: 3px 3px 0 0; background: var(--k, #5465FF); }
+  .kpi .l { font-size: 10.5px; font-weight: 700; color: var(--muted-2, #8A8DAD); text-transform: uppercase; letter-spacing: .8px; }
+  .kpi .n { font-size: 30px; font-weight: 800; letter-spacing: -.8px; margin-top: 6px; color: var(--k, #000050); }
+  .kpi .s { font-size: 11.5px; color: var(--muted, #7B7E9E); margin-top: 2px; }
+
+  .layout { display: grid; grid-template-columns: 300px minmax(0,1fr); gap: 22px; align-items: start; }
+  .layout > * { min-width: 0; }
+  .panel { background: rgba(255,255,255,.94); border: 1px solid var(--line, #ECEEF6); border-radius: var(--radius-lg, 16px);
+           box-shadow: var(--shadow-panel, 0 20px 40px -15px rgba(0,0,80,.10)); padding: 24px; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+                padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid var(--line-2, #E2E8F0); }
+  .panel-head h3 { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: -.4px; color: var(--ink, #14163A); }
+  .panel-head .kicker, .section-h .kicker { display: block; margin-bottom: 3px; color: var(--cyan-dark, #00838F); }
+
+  /* Rotation (SBA Hub ws-nav style) */
+  .side { position: sticky; top: 86px; padding: 12px; }
+  .side-h { font-size: 10px; color: var(--muted-2, #8A8DAD); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+            padding: 6px 10px 10px; border-bottom: 1px solid var(--line, #ECEEF6); margin-bottom: 6px;
+            display: flex; justify-content: space-between; align-items: center; }
+  .side-h button { border: 0; background: none; color: var(--accent, #5465FF); font-weight: 700; font-size: 10.5px;
+                   letter-spacing: .5px; text-transform: uppercase; cursor: pointer; padding: 2px 4px; }
+  .rot { list-style: none; margin: 0; padding: 0; }
+  .rot li { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px;
+            font-size: 13.5px; color: #4B4D74; font-weight: 500; }
+  .rot li .num { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 11px;
+                 font-weight: 700; background: rgba(0,0,80,.05); color: var(--muted, #7B7E9E); flex-shrink: 0; }
+  .rot li .cnt { margin-left: auto; font-size: 11px; color: var(--muted-2, #8A8DAD); }
+  .rot li.active { background: var(--accent, #5465FF); color: #fff; font-weight: 700; }
+  .rot li.active .num { background: var(--lime, #B0F467); color: var(--navy, #000050); }
+  .rot li.active .cnt { color: rgba(255,255,255,.85); }
+  .rot .mv { margin-left: auto; display: flex; gap: 4px; }
+  .side-actions { display: grid; gap: 8px; padding: 12px 4px 4px; margin-top: 8px; border-top: 1px solid var(--line, #ECEEF6); }
+
+  .btn { height: 38px; padding: 0 14px; border-radius: 8px; border: 1px solid rgba(0,0,80,.14); background: #fff;
+         color: var(--navy, #000050); font-weight: 700; font-size: 12.5px; cursor: pointer; display: inline-flex;
+         align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: .15s; }
+  .btn:hover { border-color: var(--cyan, #00DBEE); color: var(--accent, #5465FF); }
+  .btn:disabled { opacity: .45; cursor: default; border-color: rgba(0,0,80,.14); color: var(--navy, #000050); }
+  .btn-navy { background: var(--navy, #000050); border-color: var(--navy, #000050); color: #fff; }
+  .btn-navy:hover { background: var(--accent, #5465FF); border-color: var(--accent, #5465FF); color: #fff; }
+  .btn-danger { color: #B42318; border-color: rgba(217,45,32,.3); }
+  .btn-danger:hover { background: #FEE4E2; border-color: #B42318; color: #B42318; }
+  .btn-sm { height: 30px; padding: 0 10px; font-size: 11.5px; border-radius: 7px; }
+  .btn-icon { width: 28px; height: 28px; padding: 0; font-size: 12px; }
+
+  /* Toolbar (accounts-toolbar style) */
+  .toolbar { display: grid; grid-template-columns: minmax(200px,1fr) auto auto auto; gap: 8px; padding: 8px;
+             margin-bottom: 14px; background: #fff; border: 1px solid var(--line, #ECEEF6); border-radius: 12px; }
+  .search { display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 12px; border: 2px solid transparent;
+            border-radius: 9px; transition: .16s; }
+  .search:focus-within { border-color: var(--cyan, #00DBEE); box-shadow: 0 0 0 4px rgba(0,219,238,.12); }
+  .search span { color: var(--accent, #5465FF); font-size: 18px; font-weight: 800; }
+  .search input { width: 100%; height: 38px; border: 0; outline: 0; background: transparent; font-size: 13.5px; color: var(--text, #0F172A); }
+  .search input::placeholder { color: #94A3B8; }
+  .t-total, .t-select { display: inline-flex; align-items: center; gap: 5px; height: 42px; padding: 0 12px; border-radius: 9px;
+                        font-size: 12px; font-weight: 700; white-space: nowrap; border: 1px solid rgba(0,0,80,.14);
+                        background: rgba(0,0,80,.04); color: var(--navy, #000050); }
+  .t-total { background: var(--navy, #000050); border-color: var(--navy, #000050); color: #fff; cursor: pointer; }
+  .t-total:hover { background: var(--accent, #5465FF); border-color: var(--accent, #5465FF); }
+  .t-total strong { color: var(--lime, #B0F467); }
+  .t-total:hover strong { color: #fff; }
+  .t-select span { color: var(--muted-2, #8A8DAD); font-size: 11px; }
+  .t-select select { border: 0; outline: 0; background: transparent; font-size: 12px; font-weight: 700; color: var(--navy, #000050);
+                     cursor: pointer; min-width: 80px; }
+
+  /* Table (SBA Hub table style) */
+  .t-wrap { border: 1px solid var(--line-2, #E2E8F0); border-radius: 10px; overflow: hidden; }
+  .t-scroll { max-height: 470px; overflow: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  th { position: sticky; top: 0; z-index: 1; background: var(--navy, #000050); color: #fff; text-align: left; padding: 11px 14px;
+       font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+  td { padding: 11px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #F1F3F8; background: #fff; }
+  tbody tr:nth-child(even) td { background: #F8FAFC; }
+  tbody tr:hover td { background: #F2F4FF; }
+  td.date { color: var(--muted, #7B7E9E); white-space: nowrap; font-size: 12px; font-variant-numeric: tabular-nums; }
+  td.who { font-weight: 700; color: var(--ink, #14163A); }
+  td.act { text-align: right; width: 1%; }
+  .badge { display: inline-block; font-size: 9.5px; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;
+           font-weight: 700; letter-spacing: .4px; border: 1px solid; }
+  .meta { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; color: var(--muted, #7B7E9E); font-size: 11.5px; }
+  .pager { display: flex; align-items: center; gap: 6px; }
+  .empty { text-align: center; color: #94A3B8; padding: 36px; }
+
+  /* Insights */
+  .section-h { display: flex; align-items: end; justify-content: space-between; margin: 34px 0 14px; gap: 12px; flex-wrap: wrap; }
+  .section-h h2 { margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.5px; color: var(--ink, #14163A); }
+  .tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 10px; background: #fff; border: 1px solid var(--line, #ECEEF6); }
+  .tabs button { height: 34px; padding: 0 14px; border: 0; border-radius: 7px; background: none; cursor: pointer;
+                 font-size: 12.5px; font-weight: 700; color: #4B4D74; }
+  .tabs button:hover { background: rgba(0,0,80,.05); }
+  .tabs button[aria-selected=true] { background: var(--accent, #5465FF); color: #fff; }
+  .bar { display: grid; grid-template-columns: minmax(80px,180px) 1fr 44px; align-items: center; gap: 14px; margin-bottom: 11px; }
+  .bar .lbl { font-weight: 600; font-size: 13px; color: var(--ink, #14163A); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar .track { height: 24px; background: rgba(0,0,80,.05); border-radius: 6px; overflow: hidden; }
+  .bar .fill { height: 100%; display: flex; border-radius: 6px; overflow: hidden; transition: width .35s;
+               background: linear-gradient(90deg, var(--accent, #5465FF), #7B87FF); }
+  .bar .fill.alt { background: linear-gradient(90deg, var(--navy, #000050), var(--accent, #5465FF)); }
+  .bar .val { text-align: right; font-weight: 800; color: var(--navy, #000050); }
+  .legend { display: flex; gap: 16px; font-size: 11.5px; color: var(--muted, #7B7E9E); margin-bottom: 14px; font-weight: 600; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+  /* Modal (navy header with brand stripe) */
+  .modal-bg { position: fixed; inset: 0; background: rgba(7,10,40,.5); backdrop-filter: blur(3px); display: none;
+              place-items: center; z-index: 200; padding: 16px; }
+  .modal-bg.open { display: grid; }
+  .modal { background: #fff; border-radius: 18px; width: 100%; max-width: 480px; overflow: hidden;
+           box-shadow: 0 34px 100px rgba(7,19,58,.35); animation: pop .2s cubic-bezier(.2,.8,.2,1); }
+  @keyframes pop { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+  .modal-h { position: relative; padding: 18px 22px; background: var(--navy, #000050); color: #fff; }
+  .modal-h::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+                    background: linear-gradient(90deg, var(--lime, #B0F467) 0 28%, var(--cyan, #00DBEE) 28% 56%, var(--accent, #5465FF) 56% 100%); }
+  .modal-h h3 { margin: 0; font-size: 17px; font-weight: 800; }
+  .modal-h p { margin: 4px 0 0; font-size: 11.5px; color: rgba(255,255,255,.72); }
+  .modal-b { padding: 22px; }
+  .modal-f { display: flex; justify-content: space-between; gap: 8px; padding: 14px 22px; border-top: 1px solid var(--line, #ECEEF6); background: #FAFBFD; }
+  .row { display: flex; gap: 8px; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px); opacity: 0; z-index: 300;
+           display: flex; align-items: center; gap: 10px; background: var(--navy, #000050); color: #fff; padding: 12px 18px;
+           border-radius: 12px; font-weight: 600; font-size: 13px; box-shadow: 0 20px 46px rgba(0,0,80,.3);
+           transition: .25s; pointer-events: none; max-width: 90vw; }
+  .toast::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--lime, #B0F467); flex-shrink: 0; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.err::before { background: #F97066; }
+  .loading { position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 400; transition: width .4s;
+             background: linear-gradient(90deg, var(--lime, #B0F467), var(--cyan, #00DBEE), var(--accent, #5465FF)); }
+  .loading.on { width: 75%; }
+  .skeleton { text-align: center; color: #94A3B8; padding: 80px 20px; }
+
+  /* ===== Teams (overview + switcher) ===== */
+  .team-pick { height: 38px; background: #fff; }
+  .team-pick select { min-width: 150px; max-width: 220px; }
+  .btn-ghost { width: 100%; height: 40px; margin-top: 10px; background: transparent; }
+  .hero-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 18px; }
+  .hero-nav .eyebrow { margin: 0; }
+  .crumb { height: 30px; padding: 0 12px; border-radius: 7px; cursor: pointer; font-size: 11.5px; font-weight: 700;
+           background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.22); color: #fff; }
+  .crumb:hover { background: rgba(255,255,255,.16); }
+  .hero-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; font-size: 12px; color: rgba(255,255,255,.75); }
+  .hero-meta span { padding: 5px 10px; border-radius: 6px; border: 1px dashed rgba(176,244,103,.4); }
+  .hero-meta b { color: #fff; }
+  .group-h { display: flex; align-items: baseline; gap: 10px; margin: 22px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line, #ECEEF6); }
+  .group-h:first-of-type { margin-top: 6px; }
+  .group-h .kicker { color: var(--cyan-dark, #00838F); }
+  .group-h b { font-size: 16px; color: var(--ink, #14163A); }
+  .group-n { margin-left: auto; font-size: 11.5px; color: var(--muted, #7B7E9E); font-weight: 600; }
+  .tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+  .tcard { display: flex; flex-direction: column; gap: 10px; text-align: left; cursor: pointer; padding: 18px;
+           background: #fff; border: 1px solid var(--line, #ECEEF6); border-radius: var(--radius, 12px); color: var(--navy, #000050);
+           box-shadow: var(--shadow-card, 0 10px 24px -10px rgba(20,20,60,.14)); position: relative; overflow: hidden; transition: .16s; }
+  .tcard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+                   background: linear-gradient(90deg, var(--lime, #B0F467) 0 28%, var(--cyan, #00DBEE) 28% 56%, var(--accent, #5465FF) 56% 100%); }
+  .tcard:hover { transform: translateY(-2px); border-color: var(--cyan, #00DBEE); box-shadow: 0 18px 34px -14px rgba(0,0,80,.28); }
+  .tc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .tc-name { font-size: 16px; font-weight: 800; letter-spacing: -.3px; color: var(--ink, #14163A); }
+  .tc-go { color: var(--accent, #5465FF); font-weight: 800; }
+  .tc-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; background: rgba(84,101,255,.1); color: var(--accent, #5465FF); }
+  .chip.muted { background: rgba(0,0,80,.05); color: var(--muted, #7B7E9E); }
+  .tc-up { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; padding: 10px 12px; border-radius: 9px; background: var(--navy, #000050); color: #fff; }
+  .tc-lbl { font-size: 9.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--lime, #B0F467); }
+  .tc-who { font-size: 17px; font-weight: 800; }
+  .tc-then { font-size: 11.5px; color: rgba(255,255,255,.7); }
+  .tc-stats { display: flex; gap: 14px; font-size: 11.5px; color: var(--muted, #7B7E9E); }
+  .tc-stats b { color: var(--navy, #000050); font-size: 14px; }
+  .tc-last { font-size: 11.5px; color: var(--muted-2, #8A8DAD); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  textarea.input { height: auto; min-height: 92px; padding: 10px 12px; resize: vertical; line-height: 1.5; }
+  .modal.wide { max-width: 560px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  .hint { font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--muted, #7B7E9E); }
+
+  @media (max-width: 1100px) { .hero-inner { grid-template-columns: 1fr; } .take { max-width: 560px; } }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; } .side { position: static; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .toolbar { grid-template-columns: 1fr 1fr; } .search { grid-column: 1 / -1; }
+  }
+  @media (max-width: 640px) {
+    .topbar { padding: 12px 16px; } .brand-sub, .user-chip, .brand-divider, .brand-logo, .team-pick > span, .top-actions .btn span { display: none; }
+    .team-pick select { min-width: 0; max-width: 150px; } .grid2 { grid-template-columns: 1fr; }
+    .hero { padding: 30px 16px 28px; } .content { padding: 18px 16px 48px; }
+    .toolbar { grid-template-columns: 1fr; } .t-total, .t-select { justify-content: space-between; }
+    .t-select select { flex: 1; text-align: right; }
+    .panel { padding: 18px; }
+    .bar { grid-template-columns: 90px 1fr 34px; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="loading" id="loading"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-logo" role="img" aria-label="Logo"></span>
+    <span class="brand-divider"></span>
+    <div>
+      <div class="brand-name" id="t-title"><?= title ?></div>
+      <div class="brand-sub" id="t-sub"></div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <label class="t-select team-pick"><span>Team:</span><select id="t-team" onchange="openTeamView(this.value)" aria-label="Team"><option value="">All teams</option></select></label>
+    <span class="user-chip" id="t-user" hidden><span class="avatar" id="t-av"></span><span class="mail" id="t-mail"></span></span>
+    <button class="btn" onclick="refresh()" title="Get the latest changes">↻<span> Refresh</span></button>
+  </div>
+</header>
+
+<div id="app"><div class="skeleton">Loading teams…</div></div>
+
+<!-- Modal: edit / delete -->
+<div class="modal-bg" id="m-edit" onclick="if(event.target===this)closeModal('m-edit')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-edit-t">
+    <div class="modal-h"><h3 id="m-edit-t">Edit RQ</h3><p id="m-edit-sub"></p></div>
+    <div class="modal-b">
+      <div class="field"><label for="e-mem">Taken by</label><select class="select" id="e-mem"></select></div>
+      <div class="field"><label for="e-cli">Client</label><select class="select" id="e-cli"></select></div>
+      <div class="field" style="margin:0"><label for="e-pri">Priority</label><select class="select" id="e-pri"></select></div>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-danger" onclick="onDeleteRq()">Delete</button>
+      <div class="row"><button class="btn" onclick="closeModal('m-edit')">Cancel</button>
+        <button class="btn btn-navy" onclick="onSaveRq()">Save changes</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: team -->
+<div class="modal-bg" id="m-team" onclick="if(event.target===this)closeModal('m-team')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-team-t">
+    <div class="modal-h"><h3 id="m-team-t">Manage people</h3><p>Changes apply to everyone. Each person's history is kept.</p></div>
+    <div class="modal-b">
+      <div class="field"><label for="n-mem">Add person</label>
+        <div class="row"><input class="input" type="text" id="n-mem" placeholder="Name">
+          <button class="btn btn-navy" onclick="onAddMember()">Add</button></div></div>
+      <div class="field" style="margin:0"><label for="q-mem">Remove person</label>
+        <div class="row"><select class="select" id="q-mem"></select>
+          <button class="btn btn-danger" onclick="onRemoveMember()">Remove</button></div></div>
+    </div>
+    <div class="modal-f"><span></span><button class="btn" onclick="closeModal('m-team')">Close</button></div>
+  </div>
+</div>
+
+<!-- Modal: clients -->
+<div class="modal-bg" id="m-clients" onclick="if(event.target===this)closeModal('m-clients')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-clients-t">
+    <div class="modal-h"><h3 id="m-clients-t">Manage clients</h3><p>Changes apply to everyone. Past RQs keep their client.</p></div>
+    <div class="modal-b">
+      <div class="field"><label for="n-cli">Add client</label>
+        <div class="row"><input class="input" type="text" id="n-cli" placeholder="Client name">
+          <button class="btn btn-navy" onclick="onAddClient()">Add</button></div></div>
+      <div class="field" style="margin:0"><label for="q-cli">Remove client</label>
+        <div class="row"><select class="select" id="q-cli"></select>
+          <button class="btn btn-danger" onclick="onRemoveClient()">Remove</button></div></div>
+    </div>
+    <div class="modal-f"><span></span><button class="btn" onclick="closeModal('m-clients')">Close</button></div>
+  </div>
+</div>
+
+<!-- Modal: new team -->
+<datalist id="dl-sm"></datalist><datalist id="dl-mgr"></datalist>
+<div class="modal-bg" id="m-newteam" onclick="if(event.target===this)closeModal('m-newteam')">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="m-newteam-t">
+    <div class="modal-h"><h3 id="m-newteam-t">New team</h3><p>Each team has its own rotation, clients and history.</p></div>
+    <div class="modal-b">
+      <div class="field"><label for="nt-name">Team name</label><input class="input" type="text" id="nt-name" placeholder="e.g. AdOps · Andres Angulo"></div>
+      <div class="grid2">
+        <div class="field"><label for="nt-sm">Senior manager</label><input class="input" type="text" id="nt-sm" list="dl-sm" placeholder="Name"></div>
+        <div class="field"><label for="nt-mgr">Manager</label><input class="input" type="text" id="nt-mgr" list="dl-mgr" placeholder="Name"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="nt-mem">People <span class="hint">· one per line, in turn order</span></label><textarea class="input" id="nt-mem" rows="5"></textarea></div>
+        <div class="field"><label for="nt-cli">Clients <span class="hint">· one per line</span></label><textarea class="input" id="nt-cli" rows="5"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-f"><span></span><div class="row"><button class="btn" onclick="closeModal('m-newteam')">Cancel</button>
+      <button class="btn btn-navy" onclick="onCreateTeam()">Create team</button></div></div>
+  </div>
+</div>
+
+<!-- Modal: team details -->
+<div class="modal-bg" id="m-teaminfo" onclick="if(event.target===this)closeModal('m-teaminfo')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-teaminfo-t">
+    <div class="modal-h"><h3 id="m-teaminfo-t">Team details</h3><p>Renaming keeps the team's history.</p></div>
+    <div class="modal-b">
+      <div class="field"><label for="ti-name">Team name</label><input class="input" type="text" id="ti-name"></div>
+      <div class="field"><label for="ti-sm">Senior manager</label><input class="input" type="text" id="ti-sm" list="dl-sm"></div>
+      <div class="field" style="margin:0"><label for="ti-mgr">Manager</label><input class="input" type="text" id="ti-mgr" list="dl-mgr"></div>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-danger" onclick="onDeleteTeam()">Delete team</button>
+      <div class="row"><button class="btn" onclick="closeModal('m-teaminfo')">Cancel</button>
+        <button class="btn btn-navy" onclick="onSaveTeamInfo()">Save</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ================= UI state =================
+var S = null;                 // state sent by the server
+var T = null;                 // S.team: the open team (null = "All teams")
+var ui = { team: '', prio: null, cli: null, tab: 'person', q: '', fMem: '', fMonth: '', page: 0,
+           editing: null, draft: null, tq: '', fSm: '', fMgr: '' };
+var PAGE = 25;
+var PRIO_STYLE = {
+  low:    { c: '#047857', bg: 'rgba(5,150,105,.12)', bd: 'rgba(5,150,105,.3)',  solid: '#059669' },
+  medium: { c: '#B45309', bg: 'rgba(217,119,6,.12)', bd: 'rgba(217,119,6,.3)',  solid: '#D97706' },
+  high:   { c: '#B42318', bg: 'rgba(217,45,32,.10)', bd: 'rgba(217,45,32,.3)', solid: '#D92D20' }
+};
+var EXTRA = ['#5465FF', '#00838F', '#7A5AF8', '#000050'];
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// Team to open first: ?team=… link, otherwise the last one used on this browser.
+function pref(v) {
+  try { if (v === undefined) return localStorage.getItem('rq_team') || ''; localStorage.setItem('rq_team', v); } catch (e) {}
+  return '';
+}
+ui.team = '<?= initialTeam ?>' || pref();
+
+function prioStyle(p) {
+  var s = PRIO_STYLE[String(p).toLowerCase()];
+  if (s) return s;
+  var i = S ? S.config.priorities.indexOf(p) : 0;
+  var c = EXTRA[Math.max(0, i) % EXTRA.length];
+  return { c: c, bg: c + '1a', bd: c + '4d', solid: c };
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+// For names passed inside onclick="…('name')".
+function jsq(s) { return esc(String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")); }
+function badge(p) {
+  var s = prioStyle(p);
+  return '<span class="badge" style="color:' + s.c + ';background:' + s.bg + ';border-color:' + s.bd + '">' + esc(p) + '</span>';
+}
+function $(id) { return document.getElementById(id); }
+// Alphabetical copy of a list (accent- and case-insensitive). The rotation itself keeps its turn order.
+function alpha(list) { return list.slice().sort(function (a, b) { return a.localeCompare(b, 'es', { sensitivity: 'base' }); }); }
+function uniq(list) { var o = []; list.forEach(function (x) { if (x && o.indexOf(x) < 0) o.push(x); }); return o; }
+function monthLabel(m) { var p = m.split('-'); return MONTHS[+p[1] - 1] + ' ' + p[0]; }
+function opt(v, sel, label) { return '<option value="' + esc(v) + '"' + (v === sel ? ' selected' : '') + '>' + esc(label == null ? v : label) + '</option>'; }
+
+// ================= Server =================
+var busy = 0;
+function call(fn, args, onOk) {
+  args = args || [];
+  busy++; $('loading').classList.add('on');
+  var done = function () { if (--busy <= 0) { busy = 0; $('loading').classList.remove('on'); } };
+  var r = google.script.run
+    .withSuccessHandler(function (res) {
+      done();
+      if (res && res.state) {                       // an action: the server says which team is open
+        S = res.state; ui.team = S.team ? S.team.name : ''; pref(ui.team);
+        if (res.msg) toast(res.msg);
+      } else if (res && res.teams) {                // getState
+        if (args[0] !== ui.team) return;            // the user switched team meanwhile
+        S = res;
+        if (ui.team && !S.team) { toast('Could not find the team "' + ui.team + '". Showing all teams.', true); ui.team = ''; pref(''); }
+      }
+      render();
+      if (onOk) onOk(res);
+    })
+    .withFailureHandler(function (e) {
+      done();
+      toast(e && e.message ? e.message : String(e), true);
+      if (S && !S.team && ui.team) { ui.team = ''; pref(''); }   // could not open the team
+      render();
+    });
+  r[fn].apply(r, args);
+}
+function refresh() { call('getState', [ui.team]); }
+
+function openTeamView(name) {
+  ui.team = name || ''; pref(ui.team);
+  ui.q = ''; ui.fMem = ''; ui.fMonth = ''; ui.page = 0; ui.draft = null; ui.cli = null;
+  window.scrollTo(0, 0);
+  if (ui.team) {
+    S = S && { config: S.config, teams: S.teams, team: null, rqs: [], user: S.user, month: S.month };
+    $('app').innerHTML = '<div class="skeleton">Loading ' + esc(ui.team) + '…</div>';
+    syncSwitcher();
+  } else if (S) { S.team = null; S.rqs = []; render(); }
+  refresh();
+}
+
+// ================= Render =================
+function render() {
+  if (!S) return;
+  var cfg = S.config;
+  T = S.team;
+  $('t-title').textContent = cfg.title;
+  $('t-sub').textContent = T ? T.name : cfg.subtitle;
+  document.title = T ? T.name + ' · ' + cfg.title : cfg.title;
+  if (S.user) {
+    $('t-user').hidden = false;
+    $('t-mail').textContent = S.user;
+    $('t-av').textContent = S.user.charAt(0).toUpperCase();
+  }
+  syncSwitcher();
+  var y = window.scrollY;
+  if (!T) {
+    if (ui.team) return;   // still loading the team
+    $('app').innerHTML = overviewHeroHtml() + '<main class="content">' + overviewKpisHtml() + overviewHtml() + '</main>';
+    window.scrollTo(0, y);
+    bindOverview();
+    return;
+  }
+  T.clients = alpha(T.clients);
+  if (!ui.prio || cfg.priorities.indexOf(ui.prio) < 0) ui.prio = cfg.priorities[Math.floor((cfg.priorities.length - 1) / 2)];
+  if (!ui.cli || T.clients.indexOf(ui.cli) < 0) ui.cli = T.clients[0];
+  $('app').innerHTML = heroHtml() + '<main class="content">' + kpisHtml() +
+    '<div class="layout">' + rotationHtml() + historyHtml() + '</div>' + statsHtml() + '</main>';
+  window.scrollTo(0, y);
+  bind();
+}
+
+function syncSwitcher() {
+  if (!S) return;
+  var names = alpha(S.teams.map(function (t) { return t.name; }));
+  var cur = ui.team && names.indexOf(ui.team) < 0 ? [ui.team] : [];
+  $('t-team').innerHTML = opt('', ui.team, 'All teams') +
+    cur.concat(names).map(function (n) { return opt(n, ui.team); }).join('');
+}
+
+// ---------- "All teams" overview ----------
+function overviewHeroHtml() {
+  var teams = S.teams, people = 0, month = 0;
+  teams.forEach(function (t) { people += t.members; month += t.month; });
+  var names = alpha(teams.map(function (t) { return t.name; }));
+  return '<section class="hero"><div class="hero-inner"><div>' +
+    '<div class="eyebrow">⚡ RQ rotation · All teams</div>' +
+    '<h1>Who is up <span class="highlight">across every team</span></h1>' +
+    '<p><b>' + teams.length + '</b> team' + (teams.length === 1 ? '' : 's') + ' · <b>' + people + '</b> people · <b>' + month +
+      '</b> RQs in ' + monthLabel(S.month) + '. Pick a team to log an RQ and see its rotation.</p>' +
+    '<div class="hero-rule"></div></div>' +
+    '<div class="take"><div class="kicker">Jump to a team</div><h2>Open a rotation</h2>' +
+    '<div class="field"><label for="j-team">Team</label><select class="select" id="j-team">' +
+      names.map(function (n) { return opt(n, ''); }).join('') + '</select></div>' +
+    '<button class="btn-take" onclick="openTeamView($(\'j-team\').value)"' + (names.length ? '' : ' disabled') + '><span class="chk">→</span>Open team</button>' +
+    '<button class="btn btn-ghost" onclick="openNewTeam()">＋ New team</button>' +
+    '</div></div></section>';
+}
+
+function overviewKpisHtml() {
+  var t = S.teams, sms = uniq(t.map(function (x) { return x.sm; })), mgrs = uniq(t.map(function (x) { return x.manager; }));
+  var month = 0, total = 0;
+  t.forEach(function (x) { month += x.month; total += x.total; });
+  var k = function (l, n, s, c) { return '<div class="kpi"' + (c ? ' style="--k:' + c + '"' : '') + '><div class="l">' + l + '</div><div class="n">' + n + '</div><div class="s">' + s + '</div></div>'; };
+  return '<div class="kpis">' + k('Teams', t.length, sms.length + ' senior manager' + (sms.length === 1 ? '' : 's') + ' · ' + mgrs.length + ' manager' + (mgrs.length === 1 ? '' : 's')) +
+    k('RQs this month', month, monthLabel(S.month), '#00838F') + k('RQs all time', total, 'Every team', '#000050') +
+    k('People in rotation', t.reduce(function (a, x) { return a + x.members; }, 0), 'Across all teams', '#7A5AF8') + '</div>';
+}
+
+function teamsFiltered() {
+  var q = ui.tq.toLowerCase();
+  return S.teams.filter(function (t) {
+    if (ui.fSm && t.sm !== ui.fSm) return false;
+    if (ui.fMgr && t.manager !== ui.fMgr) return false;
+    if (q && [t.name, t.sm, t.manager].concat(t.people).join(' ').toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+}
+
+function overviewHtml() {
+  var sms = alpha(uniq(S.teams.map(function (t) { return t.sm; })));
+  var mgrs = alpha(uniq(S.teams.filter(function (t) { return !ui.fSm || t.sm === ui.fSm; }).map(function (t) { return t.manager; })));
+  if (ui.fMgr && mgrs.indexOf(ui.fMgr) < 0) ui.fMgr = '';
+  var list = teamsFiltered();
+  var h = '<section class="panel"><div class="panel-head"><div><span class="kicker">Directory</span><h3>Teams</h3></div>' +
+    '<div class="row"><button class="btn" onclick="downloadCsv()">⬇ Export all</button><button class="btn btn-navy" onclick="openNewTeam()">＋ New team</button></div></div>' +
+    '<div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span>' +
+      '<input type="search" id="f-tq" placeholder="Search team, manager or person…" value="' + esc(ui.tq) + '" aria-label="Search teams"></label>' +
+    '<button class="t-total" onclick="clearTeamFilters()" title="Clear filters">All: <strong>' + S.teams.length + '</strong></button>' +
+    '<label class="t-select"><span>Senior manager:</span><select id="f-sm"><option value="">All</option>' +
+      sms.map(function (m) { return opt(m, ui.fSm); }).join('') + '</select></label>' +
+    '<label class="t-select"><span>Manager:</span><select id="f-mgr"><option value="">All</option>' +
+      mgrs.map(function (m) { return opt(m, ui.fMgr); }).join('') + '</select></label></div>';
+
+  if (!list.length) return h + '<div class="empty">' + (S.teams.length ? 'No teams match these filters' : 'Create the first team to get started') + '</div></section>';
+
+  // Grouped by senior manager, alphabetical.
+  var groups = {};
+  list.forEach(function (t) { var k = t.sm || ''; (groups[k] = groups[k] || []).push(t); });
+  var keys = alpha(Object.keys(groups).filter(String));
+  if (groups['']) keys.push('');
+  keys.forEach(function (k) {
+    var ts = groups[k].sort(function (a, b) { return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }); });
+    h += '<div class="group-h"><span class="kicker">' + (k ? 'Senior manager' : 'No senior manager yet') + '</span>' +
+         (k ? '<b>' + esc(k) + '</b>' : '') + '<span class="group-n">' + ts.length + ' team' + (ts.length === 1 ? '' : 's') + '</span></div>' +
+         '<div class="tgrid">' + ts.map(teamCardHtml).join('') + '</div>';
+  });
+  return h + '</section>';
+}
+
+function teamCardHtml(t) {
+  return '<button type="button" class="tcard" onclick="openTeamView(\'' + jsq(t.name) + '\')">' +
+    '<span class="tc-top"><span class="tc-name">' + esc(t.name) + '</span><span class="tc-go" aria-hidden="true">→</span></span>' +
+    '<span class="tc-chips">' + (t.manager ? '<span class="chip">Manager · ' + esc(t.manager) + '</span>' : '<span class="chip muted">No manager</span>') + '</span>' +
+    '<span class="tc-up"><span class="tc-lbl">Up next</span><span class="tc-who">' + esc(t.upNext || '—') + '</span>' +
+      (t.then ? '<span class="tc-then">then ' + esc(t.then) + '</span>' : '') + '</span>' +
+    '<span class="tc-stats"><span><b>' + t.month + '</b> this month</span><span><b>' + t.total + '</b> total</span><span><b>' + t.members + '</b> people</span></span>' +
+    '<span class="tc-last">' + (t.last ? 'Last: ' + esc(t.last.client) + ' · ' + esc(t.last.member) + ' · ' + esc(t.last.date) : 'No RQs logged yet') + '</span>' +
+    '</button>';
+}
+
+function bindOverview() {
+  $('f-tq').oninput = function () { ui.tq = this.value; rerenderKeepFocus('f-tq'); };
+  $('f-sm').onchange = function () { ui.fSm = this.value; render(); };
+  $('f-mgr').onchange = function () { ui.fMgr = this.value; render(); };
+}
+function clearTeamFilters() { ui.tq = ''; ui.fSm = ''; ui.fMgr = ''; render(); }
+
+// ---------- One team ----------
+function heroHtml() {
+  var cfg = S.config, n = T.order.length;
+  var now = n ? T.order[T.index] : '—';
+  var next = n > 1 ? T.order[(T.index + 1) % n] : '';
+  var last = S.rqs[0];
+  var queue = '';
+  for (var i = 0; i < Math.min(n, 6); i++) {
+    var m = T.order[(T.index + i) % n];
+    queue += '<span class="' + (i === 0 ? 'now' : '') + '">' + (i === 0 ? 'Now · ' : i + 1 + '. ') + esc(m) + '</span>';
+  }
+  var meta = (T.sm ? '<span>Senior manager · <b>' + esc(T.sm) + '</b></span>' : '') +
+             (T.manager ? '<span>Manager · <b>' + esc(T.manager) + '</b></span>' : '');
+  return '<section class="hero"><div class="hero-inner"><div>' +
+    '<div class="hero-nav"><button class="crumb" onclick="openTeamView(\'\')">← All teams</button>' +
+    '<div class="eyebrow">⚡ ' + esc(T.name) + '</div></div>' +
+    '<h1>Up next: <span class="highlight">' + esc(now) + '</span></h1>' +
+    '<p>' + (next ? 'Then <b>' + esc(next) + '</b>. ' : '') +
+      (last ? 'Last RQ: <b>' + esc(last.client) + '</b> by ' + esc(last.member) + ' · ' + esc(last.date) : 'No RQs logged yet.') + '</p>' +
+    '<div class="queue">' + queue + '</div>' + (meta ? '<div class="hero-meta">' + meta + '</div>' : '') + '<div class="hero-rule"></div></div>' +
+
+    '<div class="take"><div class="kicker">Log a new RQ · ' + esc(T.name) + '</div><h2>What came in?</h2>' +
+    '<div class="field"><label for="f-cli">Client</label><select class="select" id="f-cli">' +
+      T.clients.map(function (c) { return opt(c, ui.cli); }).join('') +
+    '</select></div>' +
+    '<div class="field"><span class="field-lbl">Priority</span><div class="seg" role="group" aria-label="Priority">' +
+      cfg.priorities.map(function (p, i) {
+        return '<button type="button" style="--c:' + prioStyle(p).c + '" aria-pressed="' + (p === ui.prio) + '" onclick="setPrio(this,' + i + ')">' + esc(p) + '</button>';
+      }).join('') +
+    '</div></div>' +
+    '<button class="btn-take" id="b-take" onclick="take()"' + (n ? '' : ' disabled') + '><span class="chk">✓</span>' + esc(now) + ' takes this RQ</button>' +
+    '</div></div></section>';
+}
+
+function kpisHtml() {
+  var rows = scope();
+  var pr = S.config.priorities, tot = {};
+  pr.forEach(function (p) { tot[p] = 0; });
+  rows.forEach(function (r) { if (r.priority in tot) tot[r.priority]++; });
+  var lbl = ui.fMonth ? monthLabel(ui.fMonth) : 'All time';
+  var h = '<div class="kpis"><div class="kpi"><div class="l">Total RQs</div><div class="n">' + rows.length + '</div><div class="s">' + lbl + '</div></div>';
+  pr.slice(0, 3).forEach(function (p) {
+    var pct = rows.length ? Math.round(tot[p] / rows.length * 100) : 0;
+    h += '<div class="kpi" style="--k:' + prioStyle(p).solid + '"><div class="l">' + esc(p) + '</div><div class="n">' + tot[p] +
+         '</div><div class="s">' + pct + '% of total</div></div>';
+  });
+  return h + '</div>';
+}
+
+function rotationHtml() {
+  var counts = {};
+  S.rqs.forEach(function (r) { counts[r.member] = (counts[r.member] || 0) + 1; });
+  var editing = ui.draft !== null;
+  var list = editing ? ui.draft : T.order;
+  var h = '<aside class="panel side"><div class="side-h"><span>Rotation order</span>' +
+          (editing ? '' : '<button onclick="startOrder()">Edit</button>') + '</div><ul class="rot">';
+  list.forEach(function (m, i) {
+    var act = !editing && i === T.index;
+    h += '<li class="' + (act ? 'active' : '') + '"><span class="num">' + (i + 1) + '</span><span>' + esc(m) + '</span>';
+    if (editing) {
+      h += '<span class="mv"><button class="btn btn-icon" ' + (i === 0 ? 'disabled' : '') + ' onclick="mv(' + i + ',-1)" aria-label="Move up">↑</button>' +
+           '<button class="btn btn-icon" ' + (i === list.length - 1 ? 'disabled' : '') + ' onclick="mv(' + i + ',1)" aria-label="Move down">↓</button></span>';
+    } else {
+      h += '<span class="cnt">' + (act ? 'UP NEXT · ' : '') + (counts[m] || 0) + '</span>';
+    }
+    h += '</li>';
+  });
+  h += '</ul><div class="side-actions">' + (editing
+    ? '<button class="btn btn-navy" onclick="commitOrder()">Save order</button><button class="btn" onclick="cancelOrder()">Cancel</button>'
+    : '<button class="btn" onclick="skip()">⏭ Skip turn</button><button class="btn" onclick="openTeam()">👥 Manage people</button>' +
+      '<button class="btn" onclick="openClients()">🏷 Manage clients</button><button class="btn" onclick="openTeamInfo()">✎ Team details</button>') +
+    '</div></aside>';
+  return h;
+}
+
+function scope() { return ui.fMonth ? S.rqs.filter(function (r) { return r.month === ui.fMonth; }) : S.rqs; }
+function filtered() {
+  var q = ui.q.toLowerCase();
+  return scope().filter(function (r) {
+    if (ui.fMem && r.member !== ui.fMem) return false;
+    if (q && (r.client + ' ' + r.member + ' ' + r.priority).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+}
+function months() {
+  var seen = {}, out = [];
+  S.rqs.forEach(function (r) { if (!seen[r.month]) { seen[r.month] = 1; out.push(r.month); } });
+  return out;
+}
+
+function historyHtml() {
+  var members = T.order.slice();
+  S.rqs.forEach(function (r) { if (members.indexOf(r.member) < 0) members.push(r.member); });
+  members = alpha(members);
+  var rows = filtered();
+  var h = '<section class="panel"><div class="panel-head"><div><span class="kicker">' + esc(T.name) + ' · shared log</span><h3>RQ history</h3></div>' +
+    '<button class="btn" onclick="downloadCsv()">⬇ Export CSV</button></div>' +
+    '<div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span>' +
+      '<input type="search" id="f-q" placeholder="Search client, person or priority…" value="' + esc(ui.q) + '" aria-label="Search"></label>' +
+    '<button class="t-total" onclick="clearFilters()" title="Clear filters">All: <strong>' + S.rqs.length + '</strong></button>' +
+    '<label class="t-select"><span>Person:</span><select id="f-mem"><option value="">All</option>' +
+      members.map(function (m) { return opt(m, ui.fMem); }).join('') + '</select></label>' +
+    '<label class="t-select"><span>Month:</span><select id="f-month"><option value="">All</option>' +
+      months().map(function (m) { return opt(m, ui.fMonth, monthLabel(m)); }).join('') + '</select></label>' +
+    '</div>';
+
+  var pages = Math.max(1, Math.ceil(rows.length / PAGE));
+  if (ui.page >= pages) ui.page = pages - 1;
+  var slice = rows.slice(ui.page * PAGE, ui.page * PAGE + PAGE);
+  h += '<div class="t-wrap"><div class="t-scroll"><table><thead><tr><th>Date</th><th>Person</th><th>Client</th><th>Priority</th><th></th></tr></thead><tbody>';
+  if (!slice.length) h += '<tr><td colspan="5" class="empty">' + (S.rqs.length ? 'No results for these filters' : 'Log an RQ to get started') + '</td></tr>';
+  slice.forEach(function (r) {
+    h += '<tr><td class="date">' + esc(r.date) + '</td><td class="who">' + esc(r.member) + '</td><td>' + esc(r.client) +
+         '</td><td>' + badge(r.priority) + '</td><td class="act"><button class="btn btn-sm" onclick="openEdit(\'' + jsq(r.id) + '\')">Edit</button></td></tr>';
+  });
+  h += '</tbody></table></div></div><div class="meta"><span>' + rows.length + ' RQs' + (rows.length !== S.rqs.length ? ' of ' + S.rqs.length : '') + '</span>';
+  if (pages > 1) {
+    h += '<span class="pager"><button class="btn btn-icon" ' + (ui.page === 0 ? 'disabled' : '') + ' onclick="pg(-1)" aria-label="Previous">‹</button>' +
+         (ui.page + 1) + ' / ' + pages +
+         '<button class="btn btn-icon" ' + (ui.page >= pages - 1 ? 'disabled' : '') + ' onclick="pg(1)" aria-label="Next">›</button></span>';
+  }
+  return h + '</div></section>';
+}
+
+function statsHtml() {
+  var rows = scope(), pr = S.config.priorities;
+  var tabs = [['person', 'By person'], ['priority', 'Priority mix'], ['client', 'By client']];
+  var h = '<div class="section-h"><div><span class="kicker">Insights' + (ui.fMonth ? ' · ' + monthLabel(ui.fMonth) : '') + '</span><h2>Team workload</h2></div>' +
+    '<div class="tabs" role="tablist">' + tabs.map(function (t) {
+      return '<button role="tab" aria-selected="' + (ui.tab === t[0]) + '" onclick="setTab(\'' + t[0] + '\')">' + t[1] + '</button>';
+    }).join('') + '</div></div><section class="panel">';
+  if (!rows.length) return h + '<div class="empty">No data to show</div></section>';
+
+  var by = {}, keys;
+  if (ui.tab === 'client') {
+    rows.forEach(function (r) { by[r.client] = (by[r.client] || 0) + 1; });
+    keys = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; });
+    var max = by[keys[0]];
+    keys.forEach(function (k) {
+      h += '<div class="bar"><span class="lbl" title="' + esc(k) + '">' + esc(k) + '</span><div class="track"><div class="fill alt" style="width:' +
+           (by[k] / max * 100) + '%"></div></div><span class="val">' + by[k] + '</span></div>';
+    });
+  } else {
+    keys = T.order.slice();
+    rows.forEach(function (r) { if (keys.indexOf(r.member) < 0) keys.push(r.member); });
+    keys = alpha(keys);
+    keys.forEach(function (k) { by[k] = { t: 0 }; pr.forEach(function (p) { by[k][p] = 0; }); });
+    rows.forEach(function (r) { by[r.member].t++; if (r.priority in by[r.member]) by[r.member][r.priority]++; });
+    var mx = Math.max.apply(null, keys.map(function (k) { return by[k].t; }).concat([1]));
+    if (ui.tab === 'priority') {
+      h += '<div class="legend">' + pr.map(function (p) { return '<span><i style="background:' + prioStyle(p).solid + '"></i>' + esc(p) + '</span>'; }).join('') + '</div>';
+    }
+    keys.forEach(function (k) {
+      var mix = ui.tab === 'priority';
+      var inner = mix ? pr.map(function (p) {
+        return by[k][p] ? '<div style="width:' + (by[k][p] / by[k].t * 100) + '%;background:' + prioStyle(p).solid + '" title="' + esc(p) + ': ' + by[k][p] + '"></div>' : '';
+      }).join('') : '';
+      h += '<div class="bar"><span class="lbl">' + esc(k) + '</span><div class="track"><div class="fill" style="width:' + (by[k].t / mx * 100) + '%' +
+           (mix ? ';background:none' : '') + '">' + inner + '</div></div><span class="val">' + by[k].t + '</span></div>';
+    });
+  }
+  return h + '</section>';
+}
+
+function bind() {
+  $('f-q').oninput = function () { ui.q = this.value; ui.page = 0; rerenderKeepFocus('f-q'); };
+  $('f-mem').onchange = function () { ui.fMem = this.value; ui.page = 0; render(); };
+  $('f-month').onchange = function () { ui.fMonth = this.value; ui.page = 0; render(); };
+  $('f-cli').onchange = function () { ui.cli = this.value; };
+}
+function rerenderKeepFocus(id) {
+  var el = $(id), pos = el.selectionStart;
+  render();
+  el = $(id); el.focus(); el.setSelectionRange(pos, pos);
+}
+
+// ================= Actions =================
+function setPrio(btn, i) {
+  ui.prio = S.config.priorities[i];
+  btn.parentNode.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b === btn); });
+}
+function take() {
+  $('b-take').disabled = true;
+  call('takeRq', [ui.team, ui.cli, ui.prio]);
+}
+function skip() { call('skipTurn', [ui.team]); }
+function pg(d) { ui.page += d; render(); }
+function setTab(t) { ui.tab = t; render(); }
+function clearFilters() { ui.q = ''; ui.fMem = ''; ui.fMonth = ''; ui.page = 0; render(); }
+
+function startOrder() { ui.draft = T.order.slice(); render(); }
+function cancelOrder() { ui.draft = null; render(); }
+function mv(i, d) { var a = ui.draft, t = a[i]; a[i] = a[i + d]; a[i + d] = t; render(); }
+function commitOrder() { var d = ui.draft; ui.draft = null; call('saveOrder', [ui.team, d]); }
+
+function openTeam() {
+  $('m-team-t').textContent = 'Manage people · ' + T.name;
+  $('q-mem').innerHTML = alpha(T.order).map(function (m) { return opt(m, ''); }).join('');
+  $('n-mem').value = '';
+  openModal('m-team');
+}
+function onAddMember() { call('addMember', [ui.team, $('n-mem').value], function () { $('n-mem').value = ''; openTeam(); }); }
+function onRemoveMember() {
+  var m = $('q-mem').value;
+  if (confirm('Remove ' + m + ' from ' + T.name + '? Their history is kept.')) call('removeMember', [ui.team, m], openTeam);
+}
+
+function openClients() {
+  $('m-clients-t').textContent = 'Manage clients · ' + T.name;
+  $('q-cli').innerHTML = T.clients.map(function (c) { return opt(c, ''); }).join('');
+  $('n-cli').value = '';
+  openModal('m-clients');
+}
+function onAddClient() { call('addClient', [ui.team, $('n-cli').value], function () { $('n-cli').value = ''; openClients(); }); }
+function onRemoveClient() {
+  var c = $('q-cli').value;
+  if (confirm('Remove ' + c + ' from ' + T.name + "'s clients? Past RQs keep it.")) call('removeClient', [ui.team, c], openClients);
+}
+
+// ---------- Teams ----------
+function fillPeopleLists() {
+  $('dl-sm').innerHTML = alpha(uniq(S.teams.map(function (t) { return t.sm; }))).map(function (m) { return '<option value="' + esc(m) + '">'; }).join('');
+  $('dl-mgr').innerHTML = alpha(uniq(S.teams.map(function (t) { return t.manager; }))).map(function (m) { return '<option value="' + esc(m) + '">'; }).join('');
+}
+function openNewTeam() {
+  fillPeopleLists();
+  ['nt-name', 'nt-sm', 'nt-mgr', 'nt-mem', 'nt-cli'].forEach(function (id) { $(id).value = ''; });
+  if (ui.fSm) $('nt-sm').value = ui.fSm;
+  if (ui.fMgr) $('nt-mgr').value = ui.fMgr;
+  openModal('m-newteam');
+  $('nt-name').focus();
+}
+function onCreateTeam() {
+  call('addTeam', [{ name: $('nt-name').value, sm: $('nt-sm').value, manager: $('nt-mgr').value,
+                     members: $('nt-mem').value, clients: $('nt-cli').value }],
+       function () { closeModal('m-newteam'); window.scrollTo(0, 0); });
+}
+function openTeamInfo() {
+  fillPeopleLists();
+  $('ti-name').value = T.name; $('ti-sm').value = T.sm; $('ti-mgr').value = T.manager;
+  openModal('m-teaminfo');
+}
+function onSaveTeamInfo() {
+  call('updateTeam', [ui.team, { name: $('ti-name').value, sm: $('ti-sm').value, manager: $('ti-mgr').value }],
+       function () { closeModal('m-teaminfo'); });
+}
+function onDeleteTeam() {
+  if (!confirm('Delete the team ' + T.name + '? Its RQs stay in the sheet, but the team disappears from the app.')) return;
+  call('removeTeam', [ui.team], function () { closeModal('m-teaminfo'); window.scrollTo(0, 0); });
+}
+
+function openEdit(id) {
+  var r = S.rqs.filter(function (x) { return x.id === id; })[0];
+  if (!r) return;
+  ui.editing = r;
+  var opts = function (list, sel) {
+    if (list.indexOf(sel) < 0) list = [sel].concat(list);
+    return alpha(list).map(function (x) { return opt(x, sel); }).join('');
+  };
+  $('m-edit-sub').textContent = r.date + (r.createdBy ? ' · logged by ' + r.createdBy : '');
+  $('e-mem').innerHTML = opts(T.order.slice(), r.member);
+  $('e-cli').innerHTML = opts(T.clients.slice(), r.client);
+  $('e-pri').innerHTML = opts(S.config.priorities.slice(), r.priority);
+  openModal('m-edit');
+}
+function onSaveRq() {
+  call('editRq', [ui.team, ui.editing.id, $('e-mem').value, $('e-cli').value, $('e-pri').value], function () { closeModal('m-edit'); });
+}
+function onDeleteRq() {
+  if (!confirm('Delete this RQ? This cannot be undone.')) return;
+  call('deleteRq', [ui.team, ui.editing.id], function () { closeModal('m-edit'); });
+}
+
+function downloadCsv() {
+  var team = ui.team;
+  google.script.run.withSuccessHandler(function (csv) {
+    var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'rq_rotation_' + (team ? team.replace(/[^\w-]+/g, '_') + '_' : 'all_teams_') + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  }).withFailureHandler(function (e) { toast(e.message, true); }).exportCsv(team);
+}
+
+function openModal(id) { $(id).classList.add('open'); }
+function closeModal(id) { $(id).classList.remove('open'); }
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(function (m) { m.classList.remove('open'); });
+});
+
+var tt;
+function toast(msg, err) {
+  var t = $('toast');
+  t.textContent = msg; t.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(tt); tt = setTimeout(function () { t.className = 'toast' + (err ? ' err' : ''); }, 3200);
+}
+
+// Initial load and auto-refresh every 30 s (to see what others log).
+refresh();
+setInterval(function () {
+  var a = document.activeElement;
+  if (document.hidden || ui.draft || busy || document.querySelector('.modal-bg.open') ||
+      (a && /INPUT|SELECT|TEXTAREA/.test(a.tagName))) return;
+  refresh();
+}, 30000);
+</script>
+</body>
+</html>
