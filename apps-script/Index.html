@@ -43,7 +43,7 @@
                 radial-gradient(circle at 95% 30%, rgba(120,139,255,.18), transparent 42%),
                 radial-gradient(circle at 40% 95%, rgba(84,101,255,.12), transparent 40%);
   }
-  button, input, select { font: inherit; color: inherit; }
+  button, input, select, textarea { font: inherit; color: inherit; }
 
   /* ===== TOPBAR ===== */
   .topbar {
@@ -261,6 +261,48 @@
   .loading.on { width: 75%; }
   .skeleton { text-align: center; color: #94A3B8; padding: 80px 20px; }
 
+  /* ===== Teams (overview + switcher) ===== */
+  .team-pick { height: 38px; background: #fff; }
+  .team-pick select { min-width: 150px; max-width: 220px; }
+  .btn-ghost { width: 100%; height: 40px; margin-top: 10px; background: transparent; }
+  .hero-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 18px; }
+  .hero-nav .eyebrow { margin: 0; }
+  .crumb { height: 30px; padding: 0 12px; border-radius: 7px; cursor: pointer; font-size: 11.5px; font-weight: 700;
+           background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.22); color: #fff; }
+  .crumb:hover { background: rgba(255,255,255,.16); }
+  .hero-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; font-size: 12px; color: rgba(255,255,255,.75); }
+  .hero-meta span { padding: 5px 10px; border-radius: 6px; border: 1px dashed rgba(176,244,103,.4); }
+  .hero-meta b { color: #fff; }
+  .group-h { display: flex; align-items: baseline; gap: 10px; margin: 22px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line, #ECEEF6); }
+  .group-h:first-of-type { margin-top: 6px; }
+  .group-h .kicker { color: var(--cyan-dark, #00838F); }
+  .group-h b { font-size: 16px; color: var(--ink, #14163A); }
+  .group-n { margin-left: auto; font-size: 11.5px; color: var(--muted, #7B7E9E); font-weight: 600; }
+  .tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+  .tcard { display: flex; flex-direction: column; gap: 10px; text-align: left; cursor: pointer; padding: 18px;
+           background: #fff; border: 1px solid var(--line, #ECEEF6); border-radius: var(--radius, 12px); color: var(--navy, #000050);
+           box-shadow: var(--shadow-card, 0 10px 24px -10px rgba(20,20,60,.14)); position: relative; overflow: hidden; transition: .16s; }
+  .tcard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+                   background: linear-gradient(90deg, var(--lime, #B0F467) 0 28%, var(--cyan, #00DBEE) 28% 56%, var(--accent, #5465FF) 56% 100%); }
+  .tcard:hover { transform: translateY(-2px); border-color: var(--cyan, #00DBEE); box-shadow: 0 18px 34px -14px rgba(0,0,80,.28); }
+  .tc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .tc-name { font-size: 16px; font-weight: 800; letter-spacing: -.3px; color: var(--ink, #14163A); }
+  .tc-go { color: var(--accent, #5465FF); font-weight: 800; }
+  .tc-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; background: rgba(84,101,255,.1); color: var(--accent, #5465FF); }
+  .chip.muted { background: rgba(0,0,80,.05); color: var(--muted, #7B7E9E); }
+  .tc-up { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; padding: 10px 12px; border-radius: 9px; background: var(--navy, #000050); color: #fff; }
+  .tc-lbl { font-size: 9.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--lime, #B0F467); }
+  .tc-who { font-size: 17px; font-weight: 800; }
+  .tc-then { font-size: 11.5px; color: rgba(255,255,255,.7); }
+  .tc-stats { display: flex; gap: 14px; font-size: 11.5px; color: var(--muted, #7B7E9E); }
+  .tc-stats b { color: var(--navy, #000050); font-size: 14px; }
+  .tc-last { font-size: 11.5px; color: var(--muted-2, #8A8DAD); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  textarea.input { height: auto; min-height: 92px; padding: 10px 12px; resize: vertical; line-height: 1.5; }
+  .modal.wide { max-width: 560px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  .hint { font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--muted, #7B7E9E); }
+
   @media (max-width: 1100px) { .hero-inner { grid-template-columns: 1fr; } .take { max-width: 560px; } }
   @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr; } .side { position: static; }
@@ -268,7 +310,8 @@
     .toolbar { grid-template-columns: 1fr 1fr; } .search { grid-column: 1 / -1; }
   }
   @media (max-width: 640px) {
-    .topbar { padding: 12px 16px; } .brand-sub, .user-chip .mail, .brand-divider, .brand-logo { display: none; }
+    .topbar { padding: 12px 16px; } .brand-sub, .user-chip, .brand-divider, .brand-logo, .team-pick > span, .top-actions .btn span { display: none; }
+    .team-pick select { min-width: 0; max-width: 150px; } .grid2 { grid-template-columns: 1fr; }
     .hero { padding: 30px 16px 28px; } .content { padding: 18px 16px 48px; }
     .toolbar { grid-template-columns: 1fr; } .t-total, .t-select { justify-content: space-between; }
     .t-select select { flex: 1; text-align: right; }
@@ -285,17 +328,18 @@
     <span class="brand-logo" role="img" aria-label="Logo"></span>
     <span class="brand-divider"></span>
     <div>
-      <div class="brand-name" id="t-title"><?= team ?></div>
+      <div class="brand-name" id="t-title"><?= title ?></div>
       <div class="brand-sub" id="t-sub"></div>
     </div>
   </div>
   <div class="top-actions">
+    <label class="t-select team-pick"><span>Team:</span><select id="t-team" onchange="openTeamView(this.value)" aria-label="Team"><option value="">All teams</option></select></label>
     <span class="user-chip" id="t-user" hidden><span class="avatar" id="t-av"></span><span class="mail" id="t-mail"></span></span>
-    <button class="btn" onclick="refresh()" title="Get the latest changes">↻ Refresh</button>
+    <button class="btn" onclick="refresh()" title="Get the latest changes">↻<span> Refresh</span></button>
   </div>
 </header>
 
-<div id="app"><div class="skeleton">Loading rotation…</div></div>
+<div id="app"><div class="skeleton">Loading teams…</div></div>
 
 <!-- Modal: edit / delete -->
 <div class="modal-bg" id="m-edit" onclick="if(event.target===this)closeModal('m-edit')">
@@ -317,7 +361,7 @@
 <!-- Modal: team -->
 <div class="modal-bg" id="m-team" onclick="if(event.target===this)closeModal('m-team')">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-team-t">
-    <div class="modal-h"><h3 id="m-team-t">Manage team</h3><p>Changes apply to everyone. Each person's history is kept.</p></div>
+    <div class="modal-h"><h3 id="m-team-t">Manage people</h3><p>Changes apply to everyone. Each person's history is kept.</p></div>
     <div class="modal-b">
       <div class="field"><label for="n-mem">Add person</label>
         <div class="row"><input class="input" type="text" id="n-mem" placeholder="Name">
@@ -346,12 +390,52 @@
   </div>
 </div>
 
+<!-- Modal: new team -->
+<datalist id="dl-sm"></datalist><datalist id="dl-mgr"></datalist>
+<div class="modal-bg" id="m-newteam" onclick="if(event.target===this)closeModal('m-newteam')">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="m-newteam-t">
+    <div class="modal-h"><h3 id="m-newteam-t">New team</h3><p>Each team has its own rotation, clients and history.</p></div>
+    <div class="modal-b">
+      <div class="field"><label for="nt-name">Team name</label><input class="input" type="text" id="nt-name" placeholder="e.g. AdOps · Andres Angulo"></div>
+      <div class="grid2">
+        <div class="field"><label for="nt-sm">Senior manager</label><input class="input" type="text" id="nt-sm" list="dl-sm" placeholder="Name"></div>
+        <div class="field"><label for="nt-mgr">Manager</label><input class="input" type="text" id="nt-mgr" list="dl-mgr" placeholder="Name"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="nt-mem">People <span class="hint">· one per line, in turn order</span></label><textarea class="input" id="nt-mem" rows="5"></textarea></div>
+        <div class="field"><label for="nt-cli">Clients <span class="hint">· one per line</span></label><textarea class="input" id="nt-cli" rows="5"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-f"><span></span><div class="row"><button class="btn" onclick="closeModal('m-newteam')">Cancel</button>
+      <button class="btn btn-navy" onclick="onCreateTeam()">Create team</button></div></div>
+  </div>
+</div>
+
+<!-- Modal: team details -->
+<div class="modal-bg" id="m-teaminfo" onclick="if(event.target===this)closeModal('m-teaminfo')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-teaminfo-t">
+    <div class="modal-h"><h3 id="m-teaminfo-t">Team details</h3><p>Renaming keeps the team's history.</p></div>
+    <div class="modal-b">
+      <div class="field"><label for="ti-name">Team name</label><input class="input" type="text" id="ti-name"></div>
+      <div class="field"><label for="ti-sm">Senior manager</label><input class="input" type="text" id="ti-sm" list="dl-sm"></div>
+      <div class="field" style="margin:0"><label for="ti-mgr">Manager</label><input class="input" type="text" id="ti-mgr" list="dl-mgr"></div>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-danger" onclick="onDeleteTeam()">Delete team</button>
+      <div class="row"><button class="btn" onclick="closeModal('m-teaminfo')">Cancel</button>
+        <button class="btn btn-navy" onclick="onSaveTeamInfo()">Save</button></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 // ================= UI state =================
 var S = null;                 // state sent by the server
-var ui = { prio: null, cli: null, tab: 'person', q: '', fMem: '', fMes: '', page: 0, editing: null, draft: null };
+var T = null;                 // S.team: the open team (null = "All teams")
+var ui = { team: '', prio: null, cli: null, tab: 'person', q: '', fMem: '', fMonth: '', page: 0,
+           editing: null, draft: null, tq: '', fSm: '', fMgr: '' };
 var PAGE = 25;
 var PRIO_STYLE = {
   low:    { c: '#047857', bg: 'rgba(5,150,105,.12)', bd: 'rgba(5,150,105,.3)',  solid: '#059669' },
@@ -360,6 +444,13 @@ var PRIO_STYLE = {
 };
 var EXTRA = ['#5465FF', '#00838F', '#7A5AF8', '#000050'];
 var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// Team to open first: ?team=… link, otherwise the last one used on this browser.
+function pref(v) {
+  try { if (v === undefined) return localStorage.getItem('rq_team') || ''; localStorage.setItem('rq_team', v); } catch (e) {}
+  return '';
+}
+ui.team = '<?= initialTeam ?>' || pref();
 
 function prioStyle(p) {
   var s = PRIO_STYLE[String(p).toLowerCase()];
@@ -373,6 +464,8 @@ function esc(s) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
+// For names passed inside onclick="…('name')".
+function jsq(s) { return esc(String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")); }
 function badge(p) {
   var s = prioStyle(p);
   return '<span class="badge" style="color:' + s.c + ';background:' + s.bg + ';border-color:' + s.bd + '">' + esc(p) + '</span>';
@@ -380,71 +473,203 @@ function badge(p) {
 function $(id) { return document.getElementById(id); }
 // Alphabetical copy of a list (accent- and case-insensitive). The rotation itself keeps its turn order.
 function alpha(list) { return list.slice().sort(function (a, b) { return a.localeCompare(b, 'es', { sensitivity: 'base' }); }); }
+function uniq(list) { var o = []; list.forEach(function (x) { if (x && o.indexOf(x) < 0) o.push(x); }); return o; }
 function monthLabel(m) { var p = m.split('-'); return MONTHS[+p[1] - 1] + ' ' + p[0]; }
+function opt(v, sel, label) { return '<option value="' + esc(v) + '"' + (v === sel ? ' selected' : '') + '>' + esc(label == null ? v : label) + '</option>'; }
 
 // ================= Server =================
+var busy = 0;
 function call(fn, args, onOk) {
-  $('loading').classList.add('on');
+  args = args || [];
+  busy++; $('loading').classList.add('on');
+  var done = function () { if (--busy <= 0) { busy = 0; $('loading').classList.remove('on'); } };
   var r = google.script.run
     .withSuccessHandler(function (res) {
-      $('loading').classList.remove('on');
-      if (res && res.state) { S = res.state; if (res.msg) toast(res.msg); }
-      else if (res && res.rqs) S = res;
+      done();
+      if (res && res.state) {                       // an action: the server says which team is open
+        S = res.state; ui.team = S.team ? S.team.name : ''; pref(ui.team);
+        if (res.msg) toast(res.msg);
+      } else if (res && res.teams) {                // getState
+        if (args[0] !== ui.team) return;            // the user switched team meanwhile
+        S = res;
+        if (ui.team && !S.team) { toast('Could not find the team "' + ui.team + '". Showing all teams.', true); ui.team = ''; pref(''); }
+      }
       render();
       if (onOk) onOk(res);
     })
     .withFailureHandler(function (e) {
-      $('loading').classList.remove('on');
+      done();
       toast(e && e.message ? e.message : String(e), true);
+      if (S && !S.team && ui.team) { ui.team = ''; pref(''); }   // could not open the team
       render();
     });
-  r[fn].apply(r, args || []);
+  r[fn].apply(r, args);
 }
-function refresh() { call('getState'); }
+function refresh() { call('getState', [ui.team]); }
+
+function openTeamView(name) {
+  ui.team = name || ''; pref(ui.team);
+  ui.q = ''; ui.fMem = ''; ui.fMonth = ''; ui.page = 0; ui.draft = null; ui.cli = null;
+  window.scrollTo(0, 0);
+  if (ui.team) {
+    S = S && { config: S.config, teams: S.teams, team: null, rqs: [], user: S.user, month: S.month };
+    $('app').innerHTML = '<div class="skeleton">Loading ' + esc(ui.team) + '…</div>';
+    syncSwitcher();
+  } else if (S) { S.team = null; S.rqs = []; render(); }
+  refresh();
+}
 
 // ================= Render =================
 function render() {
   if (!S) return;
   var cfg = S.config;
-  cfg.clients = alpha(cfg.clients);
-  $('t-title').textContent = cfg.team;
-  $('t-sub').textContent = cfg.subtitle;
-  document.title = cfg.team;
+  T = S.team;
+  $('t-title').textContent = cfg.title;
+  $('t-sub').textContent = T ? T.name : cfg.subtitle;
+  document.title = T ? T.name + ' · ' + cfg.title : cfg.title;
   if (S.user) {
     $('t-user').hidden = false;
     $('t-mail').textContent = S.user;
     $('t-av').textContent = S.user.charAt(0).toUpperCase();
   }
-  if (!ui.prio || cfg.priorities.indexOf(ui.prio) < 0) ui.prio = cfg.priorities[Math.floor((cfg.priorities.length - 1) / 2)];
-  if (!ui.cli || cfg.clients.indexOf(ui.cli) < 0) ui.cli = cfg.clients[0];
-
+  syncSwitcher();
   var y = window.scrollY;
+  if (!T) {
+    if (ui.team) return;   // still loading the team
+    $('app').innerHTML = overviewHeroHtml() + '<main class="content">' + overviewKpisHtml() + overviewHtml() + '</main>';
+    window.scrollTo(0, y);
+    bindOverview();
+    return;
+  }
+  T.clients = alpha(T.clients);
+  if (!ui.prio || cfg.priorities.indexOf(ui.prio) < 0) ui.prio = cfg.priorities[Math.floor((cfg.priorities.length - 1) / 2)];
+  if (!ui.cli || T.clients.indexOf(ui.cli) < 0) ui.cli = T.clients[0];
   $('app').innerHTML = heroHtml() + '<main class="content">' + kpisHtml() +
     '<div class="layout">' + rotationHtml() + historyHtml() + '</div>' + statsHtml() + '</main>';
   window.scrollTo(0, y);
   bind();
 }
 
+function syncSwitcher() {
+  if (!S) return;
+  var names = alpha(S.teams.map(function (t) { return t.name; }));
+  var cur = ui.team && names.indexOf(ui.team) < 0 ? [ui.team] : [];
+  $('t-team').innerHTML = opt('', ui.team, 'All teams') +
+    cur.concat(names).map(function (n) { return opt(n, ui.team); }).join('');
+}
+
+// ---------- "All teams" overview ----------
+function overviewHeroHtml() {
+  var teams = S.teams, people = 0, month = 0;
+  teams.forEach(function (t) { people += t.members; month += t.month; });
+  var names = alpha(teams.map(function (t) { return t.name; }));
+  return '<section class="hero"><div class="hero-inner"><div>' +
+    '<div class="eyebrow">⚡ RQ rotation · All teams</div>' +
+    '<h1>Who is up <span class="highlight">across every team</span></h1>' +
+    '<p><b>' + teams.length + '</b> team' + (teams.length === 1 ? '' : 's') + ' · <b>' + people + '</b> people · <b>' + month +
+      '</b> RQs in ' + monthLabel(S.month) + '. Pick a team to log an RQ and see its rotation.</p>' +
+    '<div class="hero-rule"></div></div>' +
+    '<div class="take"><div class="kicker">Jump to a team</div><h2>Open a rotation</h2>' +
+    '<div class="field"><label for="j-team">Team</label><select class="select" id="j-team">' +
+      names.map(function (n) { return opt(n, ''); }).join('') + '</select></div>' +
+    '<button class="btn-take" onclick="openTeamView($(\'j-team\').value)"' + (names.length ? '' : ' disabled') + '><span class="chk">→</span>Open team</button>' +
+    '<button class="btn btn-ghost" onclick="openNewTeam()">＋ New team</button>' +
+    '</div></div></section>';
+}
+
+function overviewKpisHtml() {
+  var t = S.teams, sms = uniq(t.map(function (x) { return x.sm; })), mgrs = uniq(t.map(function (x) { return x.manager; }));
+  var month = 0, total = 0;
+  t.forEach(function (x) { month += x.month; total += x.total; });
+  var k = function (l, n, s, c) { return '<div class="kpi"' + (c ? ' style="--k:' + c + '"' : '') + '><div class="l">' + l + '</div><div class="n">' + n + '</div><div class="s">' + s + '</div></div>'; };
+  return '<div class="kpis">' + k('Teams', t.length, sms.length + ' senior manager' + (sms.length === 1 ? '' : 's') + ' · ' + mgrs.length + ' manager' + (mgrs.length === 1 ? '' : 's')) +
+    k('RQs this month', month, monthLabel(S.month), '#00838F') + k('RQs all time', total, 'Every team', '#000050') +
+    k('People in rotation', t.reduce(function (a, x) { return a + x.members; }, 0), 'Across all teams', '#7A5AF8') + '</div>';
+}
+
+function teamsFiltered() {
+  var q = ui.tq.toLowerCase();
+  return S.teams.filter(function (t) {
+    if (ui.fSm && t.sm !== ui.fSm) return false;
+    if (ui.fMgr && t.manager !== ui.fMgr) return false;
+    if (q && [t.name, t.sm, t.manager].concat(t.people).join(' ').toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+}
+
+function overviewHtml() {
+  var sms = alpha(uniq(S.teams.map(function (t) { return t.sm; })));
+  var mgrs = alpha(uniq(S.teams.filter(function (t) { return !ui.fSm || t.sm === ui.fSm; }).map(function (t) { return t.manager; })));
+  if (ui.fMgr && mgrs.indexOf(ui.fMgr) < 0) ui.fMgr = '';
+  var list = teamsFiltered();
+  var h = '<section class="panel"><div class="panel-head"><div><span class="kicker">Directory</span><h3>Teams</h3></div>' +
+    '<div class="row"><button class="btn" onclick="downloadCsv()">⬇ Export all</button><button class="btn btn-navy" onclick="openNewTeam()">＋ New team</button></div></div>' +
+    '<div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span>' +
+      '<input type="search" id="f-tq" placeholder="Search team, manager or person…" value="' + esc(ui.tq) + '" aria-label="Search teams"></label>' +
+    '<button class="t-total" onclick="clearTeamFilters()" title="Clear filters">All: <strong>' + S.teams.length + '</strong></button>' +
+    '<label class="t-select"><span>Senior manager:</span><select id="f-sm"><option value="">All</option>' +
+      sms.map(function (m) { return opt(m, ui.fSm); }).join('') + '</select></label>' +
+    '<label class="t-select"><span>Manager:</span><select id="f-mgr"><option value="">All</option>' +
+      mgrs.map(function (m) { return opt(m, ui.fMgr); }).join('') + '</select></label></div>';
+
+  if (!list.length) return h + '<div class="empty">' + (S.teams.length ? 'No teams match these filters' : 'Create the first team to get started') + '</div></section>';
+
+  // Grouped by senior manager, alphabetical.
+  var groups = {};
+  list.forEach(function (t) { var k = t.sm || ''; (groups[k] = groups[k] || []).push(t); });
+  var keys = alpha(Object.keys(groups).filter(String));
+  if (groups['']) keys.push('');
+  keys.forEach(function (k) {
+    var ts = groups[k].sort(function (a, b) { return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }); });
+    h += '<div class="group-h"><span class="kicker">' + (k ? 'Senior manager' : 'No senior manager yet') + '</span>' +
+         (k ? '<b>' + esc(k) + '</b>' : '') + '<span class="group-n">' + ts.length + ' team' + (ts.length === 1 ? '' : 's') + '</span></div>' +
+         '<div class="tgrid">' + ts.map(teamCardHtml).join('') + '</div>';
+  });
+  return h + '</section>';
+}
+
+function teamCardHtml(t) {
+  return '<button type="button" class="tcard" onclick="openTeamView(\'' + jsq(t.name) + '\')">' +
+    '<span class="tc-top"><span class="tc-name">' + esc(t.name) + '</span><span class="tc-go" aria-hidden="true">→</span></span>' +
+    '<span class="tc-chips">' + (t.manager ? '<span class="chip">Manager · ' + esc(t.manager) + '</span>' : '<span class="chip muted">No manager</span>') + '</span>' +
+    '<span class="tc-up"><span class="tc-lbl">Up next</span><span class="tc-who">' + esc(t.upNext || '—') + '</span>' +
+      (t.then ? '<span class="tc-then">then ' + esc(t.then) + '</span>' : '') + '</span>' +
+    '<span class="tc-stats"><span><b>' + t.month + '</b> this month</span><span><b>' + t.total + '</b> total</span><span><b>' + t.members + '</b> people</span></span>' +
+    '<span class="tc-last">' + (t.last ? 'Last: ' + esc(t.last.client) + ' · ' + esc(t.last.member) + ' · ' + esc(t.last.date) : 'No RQs logged yet') + '</span>' +
+    '</button>';
+}
+
+function bindOverview() {
+  $('f-tq').oninput = function () { ui.tq = this.value; rerenderKeepFocus('f-tq'); };
+  $('f-sm').onchange = function () { ui.fSm = this.value; render(); };
+  $('f-mgr').onchange = function () { ui.fMgr = this.value; render(); };
+}
+function clearTeamFilters() { ui.tq = ''; ui.fSm = ''; ui.fMgr = ''; render(); }
+
+// ---------- One team ----------
 function heroHtml() {
-  var cfg = S.config, n = S.order.length;
-  var now = n ? S.order[S.index] : '—';
-  var next = n > 1 ? S.order[(S.index + 1) % n] : '';
+  var cfg = S.config, n = T.order.length;
+  var now = n ? T.order[T.index] : '—';
+  var next = n > 1 ? T.order[(T.index + 1) % n] : '';
   var last = S.rqs[0];
   var queue = '';
   for (var i = 0; i < Math.min(n, 6); i++) {
-    var m = S.order[(S.index + i) % n];
+    var m = T.order[(T.index + i) % n];
     queue += '<span class="' + (i === 0 ? 'now' : '') + '">' + (i === 0 ? 'Now · ' : i + 1 + '. ') + esc(m) + '</span>';
   }
+  var meta = (T.sm ? '<span>Senior manager · <b>' + esc(T.sm) + '</b></span>' : '') +
+             (T.manager ? '<span>Manager · <b>' + esc(T.manager) + '</b></span>' : '');
   return '<section class="hero"><div class="hero-inner"><div>' +
-    '<div class="eyebrow">⚡ RQ rotation</div>' +
+    '<div class="hero-nav"><button class="crumb" onclick="openTeamView(\'\')">← All teams</button>' +
+    '<div class="eyebrow">⚡ ' + esc(T.name) + '</div></div>' +
     '<h1>Up next: <span class="highlight">' + esc(now) + '</span></h1>' +
     '<p>' + (next ? 'Then <b>' + esc(next) + '</b>. ' : '') +
       (last ? 'Last RQ: <b>' + esc(last.client) + '</b> by ' + esc(last.member) + ' · ' + esc(last.date) : 'No RQs logged yet.') + '</p>' +
-    '<div class="queue">' + queue + '</div><div class="hero-rule"></div></div>' +
+    '<div class="queue">' + queue + '</div>' + (meta ? '<div class="hero-meta">' + meta + '</div>' : '') + '<div class="hero-rule"></div></div>' +
 
-    '<div class="take"><div class="kicker">Log a new RQ</div><h2>What came in?</h2>' +
+    '<div class="take"><div class="kicker">Log a new RQ · ' + esc(T.name) + '</div><h2>What came in?</h2>' +
     '<div class="field"><label for="f-cli">Client</label><select class="select" id="f-cli">' +
-      cfg.clients.map(function (c) { return '<option' + (c === ui.cli ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') +
+      T.clients.map(function (c) { return opt(c, ui.cli); }).join('') +
     '</select></div>' +
     '<div class="field"><span class="field-lbl">Priority</span><div class="seg" role="group" aria-label="Priority">' +
       cfg.priorities.map(function (p, i) {
@@ -474,11 +699,11 @@ function rotationHtml() {
   var counts = {};
   S.rqs.forEach(function (r) { counts[r.member] = (counts[r.member] || 0) + 1; });
   var editing = ui.draft !== null;
-  var list = editing ? ui.draft : S.order;
+  var list = editing ? ui.draft : T.order;
   var h = '<aside class="panel side"><div class="side-h"><span>Rotation order</span>' +
           (editing ? '' : '<button onclick="startOrder()">Edit</button>') + '</div><ul class="rot">';
   list.forEach(function (m, i) {
-    var act = !editing && i === S.index;
+    var act = !editing && i === T.index;
     h += '<li class="' + (act ? 'active' : '') + '"><span class="num">' + (i + 1) + '</span><span>' + esc(m) + '</span>';
     if (editing) {
       h += '<span class="mv"><button class="btn btn-icon" ' + (i === 0 ? 'disabled' : '') + ' onclick="mv(' + i + ',-1)" aria-label="Move up">↑</button>' +
@@ -490,7 +715,8 @@ function rotationHtml() {
   });
   h += '</ul><div class="side-actions">' + (editing
     ? '<button class="btn btn-navy" onclick="commitOrder()">Save order</button><button class="btn" onclick="cancelOrder()">Cancel</button>'
-    : '<button class="btn" onclick="skip()">⏭ Skip turn</button><button class="btn" onclick="openTeam()">👥 Manage team</button><button class="btn" onclick="openClients()">🏷 Manage clients</button>') +
+    : '<button class="btn" onclick="skip()">⏭ Skip turn</button><button class="btn" onclick="openTeam()">👥 Manage people</button>' +
+      '<button class="btn" onclick="openClients()">🏷 Manage clients</button><button class="btn" onclick="openTeamInfo()">✎ Team details</button>') +
     '</div></aside>';
   return h;
 }
@@ -511,19 +737,19 @@ function months() {
 }
 
 function historyHtml() {
-  var members = S.order.slice();
+  var members = T.order.slice();
   S.rqs.forEach(function (r) { if (members.indexOf(r.member) < 0) members.push(r.member); });
   members = alpha(members);
   var rows = filtered();
-  var h = '<section class="panel"><div class="panel-head"><div><span class="kicker">Shared log</span><h3>RQ history</h3></div>' +
+  var h = '<section class="panel"><div class="panel-head"><div><span class="kicker">' + esc(T.name) + ' · shared log</span><h3>RQ history</h3></div>' +
     '<button class="btn" onclick="downloadCsv()">⬇ Export CSV</button></div>' +
     '<div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span>' +
       '<input type="search" id="f-q" placeholder="Search client, person or priority…" value="' + esc(ui.q) + '" aria-label="Search"></label>' +
     '<button class="t-total" onclick="clearFilters()" title="Clear filters">All: <strong>' + S.rqs.length + '</strong></button>' +
     '<label class="t-select"><span>Person:</span><select id="f-mem"><option value="">All</option>' +
-      members.map(function (m) { return '<option' + (m === ui.fMem ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</select></label>' +
+      members.map(function (m) { return opt(m, ui.fMem); }).join('') + '</select></label>' +
     '<label class="t-select"><span>Month:</span><select id="f-month"><option value="">All</option>' +
-      months().map(function (m) { return '<option value="' + m + '"' + (m === ui.fMonth ? ' selected' : '') + '>' + monthLabel(m) + '</option>'; }).join('') + '</select></label>' +
+      months().map(function (m) { return opt(m, ui.fMonth, monthLabel(m)); }).join('') + '</select></label>' +
     '</div>';
 
   var pages = Math.max(1, Math.ceil(rows.length / PAGE));
@@ -533,7 +759,7 @@ function historyHtml() {
   if (!slice.length) h += '<tr><td colspan="5" class="empty">' + (S.rqs.length ? 'No results for these filters' : 'Log an RQ to get started') + '</td></tr>';
   slice.forEach(function (r) {
     h += '<tr><td class="date">' + esc(r.date) + '</td><td class="who">' + esc(r.member) + '</td><td>' + esc(r.client) +
-         '</td><td>' + badge(r.priority) + '</td><td class="act"><button class="btn btn-sm" onclick="openEdit(\'' + r.id + '\')">Edit</button></td></tr>';
+         '</td><td>' + badge(r.priority) + '</td><td class="act"><button class="btn btn-sm" onclick="openEdit(\'' + jsq(r.id) + '\')">Edit</button></td></tr>';
   });
   h += '</tbody></table></div></div><div class="meta"><span>' + rows.length + ' RQs' + (rows.length !== S.rqs.length ? ' of ' + S.rqs.length : '') + '</span>';
   if (pages > 1) {
@@ -563,7 +789,7 @@ function statsHtml() {
            (by[k] / max * 100) + '%"></div></div><span class="val">' + by[k] + '</span></div>';
     });
   } else {
-    keys = S.order.slice();
+    keys = T.order.slice();
     rows.forEach(function (r) { if (keys.indexOf(r.member) < 0) keys.push(r.member); });
     keys = alpha(keys);
     keys.forEach(function (k) { by[k] = { t: 0 }; pr.forEach(function (p) { by[k][p] = 0; }); });
@@ -603,38 +829,72 @@ function setPrio(btn, i) {
 }
 function take() {
   $('b-take').disabled = true;
-  call('takeRq', [ui.cli, ui.prio]);
+  call('takeRq', [ui.team, ui.cli, ui.prio]);
 }
-function skip() { call('skipTurn'); }
+function skip() { call('skipTurn', [ui.team]); }
 function pg(d) { ui.page += d; render(); }
 function setTab(t) { ui.tab = t; render(); }
 function clearFilters() { ui.q = ''; ui.fMem = ''; ui.fMonth = ''; ui.page = 0; render(); }
 
-function startOrder() { ui.draft = S.order.slice(); render(); }
+function startOrder() { ui.draft = T.order.slice(); render(); }
 function cancelOrder() { ui.draft = null; render(); }
 function mv(i, d) { var a = ui.draft, t = a[i]; a[i] = a[i + d]; a[i + d] = t; render(); }
-function commitOrder() { var d = ui.draft; ui.draft = null; call('saveOrder', [d]); }
+function commitOrder() { var d = ui.draft; ui.draft = null; call('saveOrder', [ui.team, d]); }
 
 function openTeam() {
-  $('q-mem').innerHTML = alpha(S.order).map(function (m) { return '<option>' + esc(m) + '</option>'; }).join('');
+  $('m-team-t').textContent = 'Manage people · ' + T.name;
+  $('q-mem').innerHTML = alpha(T.order).map(function (m) { return opt(m, ''); }).join('');
   $('n-mem').value = '';
   openModal('m-team');
 }
-function onAddMember() { call('addMember', [$('n-mem').value], function () { $('n-mem').value = ''; openTeam(); }); }
+function onAddMember() { call('addMember', [ui.team, $('n-mem').value], function () { $('n-mem').value = ''; openTeam(); }); }
 function onRemoveMember() {
   var m = $('q-mem').value;
-  if (confirm('Remove ' + m + ' from the team? Their history is kept.')) call('removeMember', [m], openTeam);
+  if (confirm('Remove ' + m + ' from ' + T.name + '? Their history is kept.')) call('removeMember', [ui.team, m], openTeam);
 }
 
 function openClients() {
-  $('q-cli').innerHTML = S.config.clients.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('');
+  $('m-clients-t').textContent = 'Manage clients · ' + T.name;
+  $('q-cli').innerHTML = T.clients.map(function (c) { return opt(c, ''); }).join('');
   $('n-cli').value = '';
   openModal('m-clients');
 }
-function onAddClient() { call('addClient', [$('n-cli').value], function () { $('n-cli').value = ''; openClients(); }); }
+function onAddClient() { call('addClient', [ui.team, $('n-cli').value], function () { $('n-cli').value = ''; openClients(); }); }
 function onRemoveClient() {
   var c = $('q-cli').value;
-  if (confirm('Remove ' + c + ' from the client list? Past RQs keep it.')) call('removeClient', [c], openClients);
+  if (confirm('Remove ' + c + ' from ' + T.name + "'s clients? Past RQs keep it.")) call('removeClient', [ui.team, c], openClients);
+}
+
+// ---------- Teams ----------
+function fillPeopleLists() {
+  $('dl-sm').innerHTML = alpha(uniq(S.teams.map(function (t) { return t.sm; }))).map(function (m) { return '<option value="' + esc(m) + '">'; }).join('');
+  $('dl-mgr').innerHTML = alpha(uniq(S.teams.map(function (t) { return t.manager; }))).map(function (m) { return '<option value="' + esc(m) + '">'; }).join('');
+}
+function openNewTeam() {
+  fillPeopleLists();
+  ['nt-name', 'nt-sm', 'nt-mgr', 'nt-mem', 'nt-cli'].forEach(function (id) { $(id).value = ''; });
+  if (ui.fSm) $('nt-sm').value = ui.fSm;
+  if (ui.fMgr) $('nt-mgr').value = ui.fMgr;
+  openModal('m-newteam');
+  $('nt-name').focus();
+}
+function onCreateTeam() {
+  call('addTeam', [{ name: $('nt-name').value, sm: $('nt-sm').value, manager: $('nt-mgr').value,
+                     members: $('nt-mem').value, clients: $('nt-cli').value }],
+       function () { closeModal('m-newteam'); window.scrollTo(0, 0); });
+}
+function openTeamInfo() {
+  fillPeopleLists();
+  $('ti-name').value = T.name; $('ti-sm').value = T.sm; $('ti-mgr').value = T.manager;
+  openModal('m-teaminfo');
+}
+function onSaveTeamInfo() {
+  call('updateTeam', [ui.team, { name: $('ti-name').value, sm: $('ti-sm').value, manager: $('ti-mgr').value }],
+       function () { closeModal('m-teaminfo'); });
+}
+function onDeleteTeam() {
+  if (!confirm('Delete the team ' + T.name + '? Its RQs stay in the sheet, but the team disappears from the app.')) return;
+  call('removeTeam', [ui.team], function () { closeModal('m-teaminfo'); window.scrollTo(0, 0); });
 }
 
 function openEdit(id) {
@@ -643,30 +903,31 @@ function openEdit(id) {
   ui.editing = r;
   var opts = function (list, sel) {
     if (list.indexOf(sel) < 0) list = [sel].concat(list);
-    return alpha(list).map(function (x) { return '<option' + (x === sel ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('');
+    return alpha(list).map(function (x) { return opt(x, sel); }).join('');
   };
   $('m-edit-sub').textContent = r.date + (r.createdBy ? ' · logged by ' + r.createdBy : '');
-  $('e-mem').innerHTML = opts(S.order.slice(), r.member);
-  $('e-cli').innerHTML = opts(S.config.clients.slice(), r.client);
+  $('e-mem').innerHTML = opts(T.order.slice(), r.member);
+  $('e-cli').innerHTML = opts(T.clients.slice(), r.client);
   $('e-pri').innerHTML = opts(S.config.priorities.slice(), r.priority);
   openModal('m-edit');
 }
 function onSaveRq() {
-  call('editRq', [ui.editing.id, $('e-mem').value, $('e-cli').value, $('e-pri').value], function () { closeModal('m-edit'); });
+  call('editRq', [ui.team, ui.editing.id, $('e-mem').value, $('e-cli').value, $('e-pri').value], function () { closeModal('m-edit'); });
 }
 function onDeleteRq() {
   if (!confirm('Delete this RQ? This cannot be undone.')) return;
-  call('deleteRq', [ui.editing.id], function () { closeModal('m-edit'); });
+  call('deleteRq', [ui.team, ui.editing.id], function () { closeModal('m-edit'); });
 }
 
 function downloadCsv() {
+  var team = ui.team;
   google.script.run.withSuccessHandler(function (csv) {
     var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'rq_rotation_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.download = 'rq_rotation_' + (team ? team.replace(/[^\w-]+/g, '_') + '_' : 'all_teams_') + new Date().toISOString().slice(0, 10) + '.csv';
     document.body.appendChild(a); a.click(); a.remove();
-  }).withFailureHandler(function (e) { toast(e.message, true); }).exportCsv();
+  }).withFailureHandler(function (e) { toast(e.message, true); }).exportCsv(team);
 }
 
 function openModal(id) { $(id).classList.add('open'); }
@@ -686,9 +947,9 @@ function toast(msg, err) {
 refresh();
 setInterval(function () {
   var a = document.activeElement;
-  if (document.hidden || ui.draft || document.querySelector('.modal-bg.open') ||
-      (a && /INPUT|SELECT/.test(a.tagName))) return;
-  google.script.run.withSuccessHandler(function (s) { S = s; render(); }).getState();
+  if (document.hidden || ui.draft || busy || document.querySelector('.modal-bg.open') ||
+      (a && /INPUT|SELECT|TEXTAREA/.test(a.tagName))) return;
+  refresh();
 }, 30000);
 </script>
 </body>

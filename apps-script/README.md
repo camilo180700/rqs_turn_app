@@ -1,6 +1,6 @@
 # RQ Rotation — Google Apps Script version
 
-Web app that hands out incoming requests (RQs) to a team in a round-robin rotation. It's the evolution of the Streamlit app at the root of this repo: same logic, but it runs inside Google Workspace with no servers or credentials to manage.
+Web app that hands out incoming requests (RQs) in a round-robin rotation, for one team or many (each with its own senior manager, manager, people and clients). It's the evolution of the Streamlit app at the root of this repo: same logic, but it runs inside Google Workspace with no servers or credentials to manage.
 
 ![App screenshot](docs/screenshot.png)
 
@@ -8,7 +8,9 @@ Web app that hands out incoming requests (RQs) to a team in a round-robin rotati
 
 ## What it does
 
-- Shows whose turn it is and logs the RQ (client + priority) in one click; the turn advances automatically.
+- **All teams** page grouped by senior manager, with filters by senior manager and manager, a search that also finds people, and who's up next on every team.
+- Create, rename and delete teams from the app; a team picker and `?team=` deep links.
+- Per team: shows whose turn it is and logs the RQ (client + priority) in one click; the turn advances automatically.
 - Editable rotation order, skip turn, add and remove people without losing history.
 - History with search, filters by person and month, pagination, editing and deletion.
 - Insights by person, priority mix and client, filterable by month.
@@ -20,12 +22,12 @@ Web app that hands out incoming requests (RQs) to a team in a round-robin rotati
 
 | Piece | Details |
 |---|---|
-| Data | Google Sheet with three tabs: `RQs`, `State`, `Config` |
+| Data | Google Sheet with three tabs: `Teams` (one row per team: managers, rotation, turn, clients), `RQs` (tagged with their team), `Config` |
 | Server | `Code.gs`: API for the UI, `LockService` to avoid collisions when two people log at the same time, validation and domain-based access control |
 | Interface | `Index.html`: HTML/CSS/JS with no libraries, responsive, repaints from the state each call returns and refreshes every 30 s |
 | Brand | `Brand.html`: font and logo isolated in one file, so the brand can change without touching the interface |
-| Config | `Config` tab (key/value): name, subtitle, clients, priorities and domain, no code changes needed |
-| Migration | `Migration.gs`: reads the Streamlit format (`"29 oct 10:15"`), infers the year and copies the rotation state |
+| Config | `Config` tab (key/value): title, subtitle, priorities and domain, no code changes needed |
+| Migration | `Migration.gs`: reads the Streamlit format (`"29 oct 10:15"`), infers the year and copies the rotation state; `setup` also upgrades a single-team sheet to multi-team automatically |
 
 Because the script is bound to the sheet, copying the sheet copies the whole app: that's how it's shared as a template with other teams.
 

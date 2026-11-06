@@ -7,8 +7,9 @@
  *
  * This migration:
  *   1. Makes a backup copy of the whole old sheet in your Drive.
- *   2. Converts each row into the new RQs tab (with a full date and an id).
- *   3. Copies the rotation order and whose turn it is.
+ *   2. Converts each row into the new RQs tab (with a full date and an id),
+ *      tagged with the target team (the first team in the Teams tab by default).
+ *   3. Copies the rotation order and whose turn it is into that team.
  * The old sheet is never modified.
  *
  * About the year: Streamlit saved "day month time" with no year. Rows were
@@ -33,6 +34,7 @@ function migrateFromStreamlitUI() {
   const ok = ui.alert('Preview',
     prev.rows.length + ' RQs found' +
     (prev.rows.length ? ' (from ' + prev.from + ' to ' + prev.to + ')' : '') + '.\n' +
+    'Team: ' + defaultTeam_() + '\n' +
     'Rotation order: ' + prev.order.join(', ') + '\n' +
     'Current turn: ' + (prev.order[prev.index % prev.order.length] || '—') + '\n\n' +
     'A backup copy of the old sheet will be made. Continue?',
@@ -49,9 +51,11 @@ function migrateFromStreamlitUI() {
  *   migrateFromStreamlit('https://docs.google.com/spreadsheets/d/...')
  * @param {string} urlOrId  URL or ID of the old sheet.
  * @param {boolean=} force  true to migrate even if migrated rows already exist.
+ * @param {string=} teamName  team that receives the RQs (default: the first team).
  */
-function migrateFromStreamlit(urlOrId, force) {
+function migrateFromStreamlit(urlOrId, force, teamName) {
   setup_();
+  const team = findTeam_(teamName || defaultTeam_());
   const src = openSpreadsheet_(urlOrId);
   const data = readStreamlit_(urlOrId);
 
@@ -71,27 +75,23 @@ function migrateFromStreamlit(urlOrId, force) {
   // 2. History → RQs (chronological order).
   const rows = data.rows.slice().reverse().map(function (x) {
     return [Utilities.getUuid(), x.date, x.member, x.client, x.priority,
-            'migrated', '', '', 'streamlit'];
+            'migrated', '', '', 'streamlit', team.name];
   });
   if (rows.length) {
     rqs.getRange(rqs.getLastRow() + 1, 1, rows.length, RQ_HEADERS.length).setValues(rows);
   }
 
-  // 3. State (order and turn).
-  if (data.order.length) saveState_(data.index % data.order.length, data.order);
-
-  // 4. Clients found in the history but missing from Config.
-  const cfg = getConfig_();
+  // 3. Team rotation (order and turn) + clients found in the history but missing from the team.
+  if (data.order.length) {
+    team.order = data.order;
+    team.index = data.index % data.order.length;
+  }
   const missing = [];
   data.rows.forEach(function (x) {
-    if (cfg.clients.indexOf(x.client) < 0 && missing.indexOf(x.client) < 0) missing.push(x.client);
+    if (team.clients.indexOf(x.client) < 0 && missing.indexOf(x.client) < 0) missing.push(x.client);
   });
-  if (missing.length) {
-    const sh = sheet_(SHEET_CONFIG);
-    sh.getRange(sh.getLastRow() + 1, 1, missing.length, 2)
-      .setValues(missing.map(function (c) { return ['client', c]; }));
-  }
-  CacheService.getScriptCache().remove('config');
+  team.clients = team.clients.concat(missing);
+  saveTeam_(team);
 
   return { migrated: rows.length, backupUrl: copy.getUrl(), clientsAdded: missing };
 }

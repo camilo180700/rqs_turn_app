@@ -8,11 +8,28 @@ Estimated time: 30 to 40 minutes the first time.
 
 | File | What it is |
 |---|---|
-| `Code.gs` | Server: reads and writes the sheet; handles turns, the team and access |
+| `Code.gs` | Server: reads and writes the sheet; handles teams, turns and access |
 | `Migration.gs` | Brings over the RQs from the Streamlit app, with a backup |
 | `Index.html` | The interface, in the SBA Hub visual style (styles + logic) |
 | `Brand.html` | Font and logo for the top bar (kept separate so the brand can change without touching the interface) |
 | `appsscript.json` | Manifest: Bogotá time zone, web app limited to the domain |
+
+---
+
+## Upgrading to the multi-team version (already running app)
+
+The app now holds every team (each with its senior manager, manager, rotation, clients and history) in **one sheet and one URL**.
+
+1. Make a copy of the sheet first (File → Make a copy) as a backup.
+2. In Apps Script, replace `Code.gs`, `Migration.gs` and `Index.html` with the new ones. `Brand.html` and `appsscript.json` don't change.
+3. Run **`setup`** once. It creates the **`Teams`** tab with your current team (same order, same turn, same clients) and adds a `team` column to `RQs`, filling it in for every existing RQ. Nothing is deleted; the old `State` tab and the `client` rows in `Config` are simply no longer used.
+4. **Deploy → Manage deployments → ✏️ → Version: New version → Deploy**. Same URL, so any link or embed keeps working.
+5. Open the app → your team → **✎ Team details** to give it its real name, senior manager and manager. Renaming moves its RQs to the new name.
+6. Create the other teams with **＋ New team** (name, senior manager, manager, people in turn order, clients).
+
+**`Teams` tab:** `team | senior_manager | manager | members | turn_index | clients | updated_by | updated_at`. `members` is comma-separated in turn order; `clients` is separated by `;`. It can be edited by hand, but the app is safer.
+
+**How it looks:** the home page is **All teams**, grouped by senior manager, with filters by senior manager and manager and a search that also finds people. Each card shows who's up next. Clicking a team opens its own rotation, history and insights. The team picker at the top switches teams, and the app remembers the last team you opened. A direct link to a team: `<URL>?team=Team%20name`.
 
 ---
 
@@ -39,7 +56,7 @@ The Streamlit app doesn't store anything on its own server. Everything is in a G
 5. **+ → HTML** → name it exactly `Index` → paste **`Index.html`**. Repeat with another HTML file named exactly `Brand` → paste **`Brand.html`**.
 6. ⚙️ **Project Settings** → turn on *Show "appsscript.json" manifest file in editor*. Back in the editor, open `appsscript.json` and replace it with the one from the package.
 7. Save (Ctrl+S). In the function picker at the top, choose **`setup`** → **Run**. Accept the permissions it asks for (sheet, Drive for the backup, your email).
-8. Go back to the sheet: it now has three new tabs, `RQs`, `State` and `Config`.
+8. Go back to the sheet: it now has three new tabs, `Teams`, `RQs` and `Config`.
 
 ## Part 3 · Migrate the RQs
 
@@ -51,14 +68,15 @@ The Streamlit app doesn't store anything on its own server. Everything is in a G
 
 **About dates:** Streamlit saved dates like "29 oct 10:15", with no year. The migration works out the year by going from the newest row to the oldest and subtracting a year whenever the month "goes up" (e.g. Jan → Dec). If the app ran for more than 12 months straight with a month that had no RQs in between, double-check the oldest dates.
 
-If a client from the history wasn't on the list, it's added to `Config` automatically. If something goes wrong, delete the rows in `RQs` and run it again; the old sheet is never modified.
+The RQs go to the first team in `Teams`. If a client from the history wasn't on that team's list, it's added automatically. If something goes wrong, delete the rows in `RQs` and run it again; the old sheet is never modified.
 
 ## Part 4 · Configure and publish
 
 1. **`Config`** tab (`key` / `value` columns):
-   - `team`, `subtitle`: what shows at the top of the app.
+   - `title`, `subtitle`: what shows at the top of the app.
    - `allowed_domain`: the company domain, e.g. `company.com`. Blocks any outside account.
-   - `client` and `priority` rows: one per row. Clients can also be added or removed from the app with **Manage clients**.
+   - `priority` rows: one per row, shared by every team.
+   - Teams, people and clients are managed from the app (**＋ New team**, **Manage people**, **Manage clients**, **Team details**) and stored in the `Teams` tab.
 2. In the Apps Script editor: **Deploy → New deployment** → type **Web app**.
    - Description: `v1`
    - Execute as: **Me** (your company email)
@@ -84,6 +102,7 @@ Edit in the editor → Save → **Deploy → Manage deployments → ✏️ → V
 | "Could not read the date …" when migrating | Someone edited a `time` cell by hand in the old sheet. Fix it using the `05 oct 14:30` format and run it again. |
 | The migration says "RQs were already migrated" | It already ran once. Delete those rows in `RQs` to run it again. |
 | I changed `Config` and nothing changed | Config is cached for 1 minute. Wait and click ↻ Refresh. |
+| "Could not find the team …" | Someone renamed or deleted that team. The app goes back to All teams; pick it again. |
 
 ---
 
@@ -93,16 +112,16 @@ The whole app lives inside the sheet: copying the sheet copies the code. That's 
 
 **Once (you):**
 1. With your sheet working: File → **Make a copy** → name it `TEMPLATE – RQ Rotation`.
-2. In the copy: delete the data rows in `RQs` (keep the header), put sample names in `State` → `order` and leave `Config` with generic values.
+2. In the copy: delete the data rows in `RQs` (keep the header), leave one sample team in `Teams` and generic values in `Config`.
 3. Share the template as *Viewer* with the company. To hand it out, use the direct-copy link: replace the end of the URL, `/edit…`, with **`/copy`**. Anyone who opens it sees a "Make a copy" button.
 
 **Each new team:**
 1. Open the `/copy` link with their company email → **Make a copy**.
-2. Edit `Config` (team name, subtitle, clients, priorities, domain) and `State` → `order` with their people separated by commas (they can also do this from the app with "Manage team").
+2. Edit `Config` (title, subtitle, priorities, domain) and set up their teams from the app (**＋ New team**).
 3. Extensions → Apps Script → run `setup` once and accept the permissions.
 4. Do Part 4, step 2 (deploy as a web app) and share their URL.
 
-Each team ends up with its own sheet, data and URL. No team sees another team's data. Code improvements get pasted into each copy (or teams get the new version of the files).
+Each copy ends up with its own sheet, data and URL. Inside one copy, every team is visible to everyone who can open the app. Code improvements get pasted into each copy (or teams get the new version of the files).
 
 ---
 
@@ -110,9 +129,13 @@ Each team ends up with its own sheet, data and URL. No team sees another team's 
 
 | I want to change… | Where |
 |---|---|
-| Clients, priorities, name, subtitle | `Config` tab (no code) |
+| Priorities, title, subtitle | `Config` tab (no code) |
+| Teams, people, clients per team | The app, or the `Teams` tab |
+| Columns of the Teams tab | `Code.gs` → `TEAM_HEADERS`, `TCOL`, `readTeams_`, `teamRow_` |
+| Upgrade from the single-team sheet | `Code.gs` → `setup_` |
+| Team summaries for the All teams page | `Code.gs` → `buildState_` |
 | Logo and font | `Brand.html` |
-| Defaults for new teams | `Code.gs` → `DEFAULT_CONFIG` |
+| Defaults for a brand-new sheet | `Code.gs` → `DEFAULT_CONFIG` |
 | Columns saved per RQ | `Code.gs` → `RQ_HEADERS` and `COL` |
 | What happens when an RQ is taken | `Code.gs` → `takeRq` |
 | Turn rules when removing/reordering people | `Code.gs` → `removeMember`, `saveOrder` |
@@ -121,6 +144,8 @@ Each team ends up with its own sheet, data and URL. No team sees another team's 
 | Colors (navy, accent, lime), spacing | `Index.html` → `<style>` block, variables in `:root` |
 | Colors per priority | `Index.html` → `:root` (`--low`, `--med`, `--high`) and `PRIO_STYLE` |
 | Hero text ("Up next", ROTATION watermark) | `Index.html` → `heroHtml` and `.hero::after` |
-| Cards, table, insights | `Index.html` → `render`, `historyHtml`, `statsHtml` |
+| All teams page (cards, filters, grouping) | `Index.html` → `overviewHeroHtml`, `overviewHtml`, `teamCardHtml` |
+| New team / team details modals | `Index.html` → `openNewTeam`, `openTeamInfo` and the `m-newteam`, `m-teaminfo` blocks |
+| Cards, table, insights of one team | `Index.html` → `render`, `historyHtml`, `statsHtml` |
 | Rows per page / auto-refresh | `Index.html` → `PAGE` and the `setInterval` at the end |
 | Format of the old Streamlit sheet | `Migration.gs` → `readStreamlit_` |
